@@ -17,6 +17,9 @@ Authored by **Nicholas Gerrans**, this framework combines:
 - `FormaticsExpansion.txt` — Mathematical formalization and axiomatic system
 - `Spiral Formatics QG.txt` — Full quantum gravity framework, including action, entropy, and path integral over Formatics shells
 - `RH_PY.txt` — Spiral spectral Laplacian calculations and eigenstructure from Python implementation
+- `Formatics Axioms.txt` — Full axiomatic definition and geometric logic of Formatics vertex spaces
+- `Formatics Proof.txt` — Formal proofs of Formatics dimensional and recursive stability theorems
+
 
 ---
 
