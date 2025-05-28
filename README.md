@@ -1,6 +1,6 @@
 # Spiral Formatics Quantum Gravity
 
-[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.15532297-blue)](https://doi.org/10.5281/zenodo.15532297)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.15532296-blue)](https://doi.org/10.5281/zenodo.15532296))
 
 This repository contains the original foundational documents of **Spiral Formatics Quantum Gravity**, a geometric framework unifying discrete curvature, spectral dynamics, and field coupling.
 
