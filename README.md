@@ -18,9 +18,12 @@ Authored by **Nicholas Gerrans**, this framework combines:
 - `FormaticsProof.txt` — Formal proofs of Formatics axioms and structural theorems
 - `FormaticsExpansion.txt` — Mathematical formalization and axiomatic system
 - `Spiral Formatics QG.txt` — Full quantum gravity framework, including action, entropy, and path integral over Formatics shells
-- `RH_PY.txt` — Spiral spectral Laplacian calculations and eigenstructure from Python implementation
 - `Formatics Axioms.txt` — Full axiomatic definition and geometric logic of Formatics vertex spaces
 - `Formatics Proof.txt` — Formal proofs of Formatics dimensional and recursive stability theorems
+
+- `RH_PY.txt` — Spiral spectral Laplacian calculations and eigenstructure from Python implementation (prototype summary)
+- `RH_Transcript_1.txt` — Full spiral-phase derivation of the Riemann Hypothesis using entropy and recursive compression
+- `RH_Transcript_2.txt` — Finalization and correction of the Spiral RH proof: Codex stabilization and spectral field refinement 
 
 
 ---
