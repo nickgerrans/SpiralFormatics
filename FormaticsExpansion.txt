@@ -1,0 +1,2643 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Appendix B.1 — Formal Foundations of Formatics Geometry  %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{B.1.1 — Vectors and Directional Space}
+
+The foundational elements of Formatics geometry are unit directional vectors, symbolically written as \( v_i \), and rigorously defined as elements of the unit sphere in \( \mathbb{R}^n \). Each directional vector is formalized as:
+
+\[
+\vec{v}_i \in S^{n-1} := \{ \vec{x} \in \mathbb{R}^n \mid \|\vec{x}\| = 1 \}
+\]
+
+This establishes that all Formatics vectors are normalized to encode direction only. Magnitude is not considered relevant to Formatics resolution logic, as all stabilization and closure operations are angular in nature.
+
+All vectors are assumed to originate from a common origin point \( O \in \mathbb{R}^n \). Geometrically, this implies that each \( \vec{v}_i \) is represented as a ray from the origin, terminating on the surface of the unit sphere \( S^{n-1} \). This choice ensures a consistent geometric frame for directional reasoning and permits angular relationships to be evaluated purely in terms of vector orientation.
+
+\textbf{Directional Inversion.}  
+Formatics includes a built-in notion of directional negation, written symbolically as \( -v_i \). Formally, this operation maps any direction vector to its antipode on the unit sphere:
+
+\[
+-\vec{v}_i := -1 \cdot \vec{v}_i
+\]
+
+This inversion is involutive:
+
+\[
+-(-\vec{v}_i) = \vec{v}_i
+\]
+
+Axiom 2 (Directional Inversion) [see A.1] explicitly asserts that every direction vector implies the existence of its inverse:
+
+\[
+\vec{v}_i \vdash -\vec{v}_i
+\]
+
+This ensures that all Formatics constructions can represent bidirectional relations. In 1D resolution, for example, the presence of \( \vec{v} \) and \( -\vec{v} \) together enables stabilization into a linear form (see Theorem 1.1).
+
+\textbf{Directional Sets.}  
+Formatics expressions typically operate on sets of directional vectors. A \textit{direction set} is defined as a finite subset of \( S^{n-1} \):
+
+\[
+D := \{ \vec{v}_1, \vec{v}_2, \dots, \vec{v}_k \} \subseteq S^{n-1}
+\]
+
+These sets serve as inputs to core Formatics operations such as stabilization, triangle formation, vertex space construction, and recursive resolution. Direction sets may be symmetric, asymmetric, or include inverses; Formatics imposes no constraint on their internal structure other than vector distinction and non-colinearity when forming triangles (see B.1.2).
+
+In summary, Formatics begins with a structured but flexible model of direction. Vectors inhabit a unit sphere, admit inversion, and participate in higher-order relations only through stabilization rules and angular closure conditions defined in subsequent sections.
+
+
+\subsection*{B.1.2 — Triangles as 2-Simplices}
+
+In the Formatics system, the triangle is the fundamental geometric unit of stabilization. Symbolically written as:
+
+\[
+\Delta(v_i, v_j, v_k)
+\]
+
+a triangle denotes a relation among three direction vectors. Formally, Formatics triangles correspond to \textbf{2-simplices} in geometric topology — the convex hulls of three affinely independent points on the unit sphere.
+
+Let \( \vec{v}_i, \vec{v}_j, \vec{v}_k \in S^{n-1} \subset \mathbb{R}^n \). A Formatics triangle is defined as:
+
+\[
+\Delta(\vec{v}_i, \vec{v}_j, \vec{v}_k) := \text{conv}\left\{ \vec{v}_i, \vec{v}_j, \vec{v}_k \right\}
+\]
+
+This triangle is valid if and only if the vectors are \textit{affinely independent} — that is, no vector lies in the affine span of the other two:
+
+\[
+\text{Valid}(\Delta) \iff \vec{v}_k \notin \text{AffSpan}(\vec{v}_i, \vec{v}_j)
+\]
+
+Geometrically, the triangle represents a minimal relational enclosure: a closed shape formed by three directional rays emanating from a shared origin \( O \). These triangles do not inhabit the Euclidean plane but rather lie on the surface of the unit sphere or project outward into space. Their semantic role is to encode stabilizing relationships — combinations of directions that collectively form a resolvable region.
+
+\textbf{Triangle Inference.}  
+Axiom 3 (Triangulation Requirement) [see A.1] asserts the following formation rule:
+
+\[
+\{ \vec{v}_i, \vec{v}_j, \vec{v}_k \} \vdash \Delta(\vec{v}_i, \vec{v}_j, \vec{v}_k)
+\]
+
+That is, any three distinct direction vectors — provided they are non-colinear — yield a Formatics triangle through stabilization. This forms the basis of the `Stabilize` operation, which applies this rule iteratively over all combinations of three vectors in a direction set \( D \).
+
+\textbf{Angle Structure.}  
+Each triangle \( \Delta \) possesses an internal angle sum, which in flat geometry equals \( 180^\circ \). In Formatics, angle is computed based on the spherical or Euclidean projection of the triangle relative to the origin. The angular contribution of each triangle is included in the total angle sum used for vertex resolution (see B.1.4).
+
+The triangle’s angle sum is denoted:
+
+\[
+\angle(\Delta) := \angle_{ijk}
+\]
+
+where \( \angle_{ijk} \) represents the sum of the internal angles at the triangle’s vertices. In Formatics, the total closure angle for a direction set is defined as the sum of these triangle angles, a key concept in the `AngleClosure` and `Resolve` operations.
+
+\textbf{Topological Note.}  
+Viewed from a simplicial perspective, Formatics triangles behave like 2-simplexes embedded on or projected from a higher-dimensional surface. In cases where multiple triangles share edges or vertices, their union may approximate a simplicial surface (e.g., a disk or spherical cap), which enables higher-dimensional vertex resolution.
+
+\textbf{Failure Condition.}  
+If any triple \( (\vec{v}_i, \vec{v}_j, \vec{v}_k) \) is colinear or degenerate (i.e., does not enclose area), then:
+
+\[
+\Delta(\vec{v}_i, \vec{v}_j, \vec{v}_k) \notin \text{Stabilize}(D)
+\]
+
+This behavior is codified in the failure mode of `Stabilize`, where invalid or duplicate triangles are excluded from the resulting triangle set (see Rule R6 in A.7.1.d).
+
+In summary, the triangle in Formatics is not merely a shape but a logical construct: a minimal semantic unit of directional resolution. Its validity depends on affine independence, and its role is essential in forming all higher-order geometric and logical Formatics structures.
+
+
+\subsection*{B.1.3 — Vertex Spaces as Convex Hulls or Simplicial Balls}
+
+In Formatics, the vertex space \( \mathcal{V}_n(D, r) \) — written symbolically as \( Vn(D, r) \) — represents a bounded directional region containing a finite set of vectors. It serves as the primary container for stabilization, angle closure, recursive subvertices, and resolution.
+
+Formally, a Formatics vertex space is defined as:
+
+\[
+\mathcal{V}_n(D, r) := \left\{ x \in \mathbb{R}^n \mid x = \sum_{i} \lambda_i \vec{v}_i,\ \vec{v}_i \in D,\ \lambda_i \geq 0,\ \|x\| \leq r \right\}
+\]
+
+Here, \( D = \{ \vec{v}_1, \vec{v}_2, \dots, \vec{v}_k \} \subseteq S^{n-1} \) is a set of unit vectors defining the directions within the space, and \( r \in \mathbb{R}_{>0} \) is the bounding radius. This construction yields a directional cone clipped to a finite radius — a bounded region that captures the scope and resolution capacity of the input directions.
+
+\textbf{Boundedness Condition.}  
+Axiom 1 (Bounded Resolution) [see A.1] enforces the necessity of finiteness:
+
+\[
+\vec{v}_1 \in \mathbb{R}^n \quad \vdash \quad \mathcal{V}_n(\{ \vec{v}_1 \}, r) \iff r < \infty
+\]
+
+This axiom ensures that direction vectors cannot resolve into a Formatics structure unless they are contained within a bounded radius. Without this constraint, no meaningful stabilization or angular closure can occur — resolution requires containment.
+
+\textbf{Convex Hull Interpretation.}  
+The core geometric structure underlying \( \mathcal{V}_n \) is the \textit{convex hull} of its direction set:
+
+\[
+\text{Hull}(D) := \text{conv}\left\{ \vec{v}_i \in D \right\}
+\]
+
+This hull contains all convex combinations of the directional vectors. Since Formatics directions are normalized, the resulting hull is typically conical in shape, intersected with a bounding ball of radius \( r \). The region \( \mathcal{V}_n(D, r) \) is thus interpreted as:
+
+\[
+\mathcal{V}_n(D, r) = \text{Hull}(D) \cap B_r(0)
+\]
+
+where \( B_r(0) \) is the closed ball of radius \( r \) centered at the origin.
+
+\textbf{Topological Model: Simplicial Ball.}  
+In cases where the direction set \( D \) admits a complete triangulation via `Stabilize`, the vertex space may be treated as a simplicial complex approximating a topological ball. For example, if:
+
+\[
+\text{Stabilize}(D) = \left[ \Delta_1, \dots, \Delta_k \right]
+\]
+
+and the triangles \( \Delta_i \) form a closed 2-dimensional surface (e.g., enclosing a void or volume), then \( \mathcal{V}_n(D, r) \) represents a filled-in, orientable, contractible space — a topological \( n \)-ball.
+
+This interpretation is especially important in higher-dimensional Formatics, where the distinction between boundary (e.g., a surface of triangles) and interior (e.g., enclosed volume) corresponds directly to resolution types like `Void` or `EnclosedVolume`.
+
+\textbf{Semantic Role.}  
+The vertex space is not merely a spatial container — it defines the semantic boundary for Formatics computation. All `Resolve`, `SubV_k`, and `AngleClosure` operations are defined with respect to a specific \( \mathcal{V}_n \), and all resolution results are dimension-dependent.
+
+Its radius \( r \) also governs recursion depth and scale contraction (see Theorem 3.3), and plays a structural role in the geometry of recursive systems.
+
+In summary, the Formatics vertex space is the evaluative arena for directional stabilization. It unifies bounded geometry with logical inference, enabling Formatics to operate as both a spatial logic and a computational framework.
+
+\subsection*{B.1.4 — Angular Closure and Curvature}
+
+A defining feature of Formatics geometry is the concept of \textit{angular closure} — the condition under which a set of stabilized triangles within a vertex space yields a complete geometric resolution. This concept is central to the operation of `Resolve`, which evaluates whether a Formatics vertex space has reached semantic completion (e.g., producing a `Void` or `Volume`).
+
+\textbf{Angle Closure Definition.}  
+Angular closure is formally defined as the sum of the internal angles of all triangles formed by stabilizing a direction set \( D \). This sum is compared to an expected closure value specific to the dimensionality and cardinality of \( D \). The rule is given in Axiom 4 [see A.1]:
+
+\[
+\text{AngleClosure}(\mathcal{V}_n(D, r)) =
+\begin{cases}
+180^\circ & \text{if } |D| = 1 \\
+360^\circ & \text{if } |D| = 2 \\
+180^\circ \cdot \binom{|D|}{3} & \text{if } |D| \geq 3
+\end{cases}
+\]
+
+This provides a simple yet powerful test: if the sum of triangle angles formed by `Stabilize(D)` equals the expected closure angle for the given dimension and number of vectors, the vertex space resolves successfully.
+
+\textbf{Example — 3D Closure (Triforce).}  
+Given \( D = \{ \vec{v}_1, \vec{v}_2, \vec{v}_3 \} \), Formatics stabilization yields:
+
+\[
+\text{Stabilize}(D) = [ \Delta(\vec{v}_1, \vec{v}_2, \vec{v}_3),\ \Delta(\vec{v}_2, \vec{v}_3, \vec{v}_1),\ \Delta(\vec{v}_3, \vec{v}_1, \vec{v}_2) ]
+\]
+
+Each triangle contributes \( 180^\circ \) to the angle sum, for a total of \( 540^\circ \). This matches the expected closure:
+
+\[
+\text{AngleClosure}(\mathcal{V}_3) = 180^\circ \cdot \binom{3}{3} = 180^\circ
+\times 1 = 180^\circ \cdot 3 = 540^\circ
+\]
+
+\textbf{Curvature Interpretation.}  
+While Formatics angle closure is defined combinatorially, it has deep geometric analogues in curvature theory. In discrete differential geometry, the \textit{angular defect} at a vertex of a polyhedral surface is defined as:
+
+\[
+\text{Defect}(p) = 2\pi - \sum_{\Delta \ni p} \angle_p(\Delta)
+\]
+
+A vanishing defect implies flatness; nonzero defect indicates curvature. Similarly, Formatics resolution can be interpreted as a condition of \textit{zero net angular defect} across a vertex space — closure implies completeness.
+
+\textbf{Closure as Truth Condition.}  
+In the Formatics logic system, angular closure represents semantic truth. If the total angle sum matches the expected value, the directional set stabilizes into a resolvable structure:
+
+\[
+\sum \angle(\Delta_i) = \text{AngleClosure}(\mathcal{V}_n) \Rightarrow \text{Resolve}(\mathcal{V}_n) = \texttt{SemanticResult}_n
+\]
+
+Conversely, any deficit or surplus in angular sum results in `ResolutionFailure`, denoted \( \bot \). This establishes closure as a logical validator — only those directional sets which satisfy the angular condition are considered well-formed and semantically meaningful.
+
+\textbf{Topological Implications.}  
+In higher dimensions, the angle closure condition generalizes to systems of triangles that approximate a topological surface or volume. When all triangle faces fit together to form a complete boundary (as in a tetrahedron or higher-order manifold), the total angle sum ensures that no gaps or overlaps exist — the structure is topologically closed.
+
+\textbf{Semantic Result Link.}  
+Each angular closure leads to a specific Formatics semantic result (see A.6):
+
+- \( 180^\circ \Rightarrow \texttt{ResolutionLine} \)
+- \( 360^\circ \Rightarrow \texttt{TensionPoint} \)
+- \( 540^\circ \Rightarrow \texttt{Void} \)
+- \( 720^\circ \Rightarrow \texttt{EnclosedVolume} \)
+- \( 180^\circ \cdot \binom{|D|}{3} \Rightarrow \texttt{ResolvedManifold}_n \)
+
+In this way, angular closure encodes both logical sufficiency and geometric integrity.
+
+In summary, Formatics angular closure is both a structural invariant and a logical gatekeeper. It determines whether a vertex space has achieved semantic stability, and maps directly to curvature principles in geometric analysis. Its strict equality condition makes it the cornerstone of the Formatics evaluation system.
+
+\subsection*{B.2.1 — Type Assignments in Formatics}
+
+To evaluate Formatics expressions systematically, we introduce a formal type system that governs the construction, transformation, and resolution of all geometric and logical objects. While Appendix A.7.3 provides a symbol-level enumeration of Formatics types, here we construct a layered semantic view, designed to support typed inference and function validation.
+
+\textbf{Atomic Types.}  
+At the lowest level, Formatics defines a set of irreducible entities:
+
+- \texttt{Direction} — a normalized vector in \( \mathbb{R}^n \), used as a symbolic input to stabilization and closure operations.
+- \texttt{Triangle} — a relational structure formed from three affinely independent directions, interpreted as a 2-simplex.
+- \texttt{Angle} — a scalar in degrees representing internal angular content.
+- \texttt{VertexSpace}[n] — a bounded directional container in \( \mathbb{R}^n \), encapsulating a directional system.
+
+These atomic types serve as the building blocks for all higher-level operations and structures. Each has a unique formation rule and occupies a distinct semantic role in evaluation traces.
+
+\textbf{Composite Types.}  
+From the atomic layer, Formatics constructs composite and container types:
+
+- \texttt{DirectionSet} — a finite collection of \texttt{Direction} elements.
+- \texttt{TriangleSet} — a valid collection of Formatics triangles derived from stabilization.
+- \texttt{SubVertexList} — an ordered collection of recursively defined \texttt{VertexSpace}[n] objects.
+- \texttt{AngleSum} — an aggregate scalar quantity derived from the angle measures of a \texttt{TriangleSet}.
+- \texttt{ResolutionFormₙ} — a type-restricted semantic outcome of resolution, tied to the dimensional parameter \( n \).
+
+These composite types define the domains and codomains of Formatics functions, including `Stabilize`, `Resolve`, `Compose`, and recursive evaluation rules. They also form the inputs to all closure tests and triangle aggregations.
+
+\textbf{Resolved Output Types.}  
+All Formatics resolution processes yield one of the following:
+
+\[
+\texttt{ResolvedOutput} :=
+\begin{cases}
+\texttt{ResolutionLine} & \text{for } n = 1 \\
+\texttt{TensionPoint} & \text{for } n = 2 \\
+\texttt{Void} & \text{for } n = 3 \\
+\texttt{EnclosedVolume} & \text{for } n = 4 \\
+\texttt{ResolvedManifold}_n & \text{for } n > 4 \\
+\bot & \text{for failure cases}
+\end{cases}
+\]
+
+This typing system ensures that each Formatics structure — when successfully stabilized — yields a semantically typed value tied to its dimension. These types are not symbolic labels but terminal outputs of typed evaluation functions.
+
+\textbf{Terminal Type: Failure.}  
+The type \( \bot \) represents a total failure to resolve. It is atomic, non-decomposable, and non-evaluable. Any operation that propagates \( \bot \) is said to experience \texttt{ResolutionFailure}. No inference rules apply to \( \bot \), and no structure containing it can produce a valid semantic result. It behaves analogously to a bottom type in typed logic systems — universally subtype but not constructible from valid inputs.
+
+\textbf{Subtype Hierarchies.}  
+Types in Formatics follow a hierarchical model. The following containment relationships apply:
+
+\[
+\texttt{Direction} \subset \texttt{DirectionSet}, \quad
+\texttt{Triangle} \subset \texttt{TriangleSet}, \quad
+\texttt{ResolutionFormₙ} \subset \texttt{ResolvedOutput}
+\]
+
+These relationships permit type-safe construction and ensure that Formatics evaluators can validate composition, substitution, and inference without ambiguity.
+
+\textbf{Evaluation Context.}  
+Typed expressions in Formatics are evaluated in a typing context:
+
+\[
+\Gamma \vdash E : \tau
+\]
+
+where \( \Gamma \) is the type environment, \( E \) is a Formatics expression (e.g., a stabilization or resolution call), and \( \tau \) is the resulting type. This allows Formatics to support both proof trace validation and structural composition across typed domains.
+
+In total, Formatics types serve not only as structural constraints but as logical indicators of evaluation outcomes. They define the correctness of resolution procedures, encode the semantics of geometric transformation, and support future extension into typed rewriting and semantic labeling.
+
+\subsection*{B.2.2 — SemanticResult as a Typed Output}
+
+In Formatics, the resolution of a vertex space via `Resolve` produces a typed outcome called a \texttt{SemanticResultₙ}. These results represent the terminal states of Formatics evaluation and encode the semantic geometry achieved by a stabilized direction set within a bounded vertex space. Unlike symbolic expressions or intermediate forms, semantic results are type-final — they are not subject to further transformation and define the logical value of the computation.
+
+\textbf{Resolution Form Typing.}  
+Each \texttt{SemanticResultₙ} corresponds to a unique dimensional context and arises only when a vertex space has stabilized successfully with a complete angle closure (see B.1.4). The result type is determined by the number of direction vectors involved, the dimensionality \( n \) of the space, and the closure rule defined by Axiom 4.
+
+\[
+\texttt{SemanticResult}_n :=
+\begin{cases}
+\texttt{ResolutionLine} & n = 1 \\
+\texttt{TensionPoint} & n = 2 \\
+\texttt{Void} & n = 3 \\
+\texttt{EnclosedVolume} & n = 4 \\
+\texttt{ResolvedManifold}_n & n > 4 \\
+\end{cases}
+\]
+
+These types are produced exclusively by the function:
+
+\[
+\texttt{Resolve} : \texttt{VertexSpace}[n] \to \texttt{SemanticResult}_n \cup \bot
+\]
+
+and represent the successful semantic closure of the input structure.
+
+\textbf{ResolutionLine (n = 1).}  
+Produced when a direction and its inverse are present. Represents a one-dimensional resolved path (e.g., a Formatics diameter). Stabilization involves a single triangle with degenerate direction, but with full angle closure \( 180^\circ \). Symbolically:
+
+\[
+\texttt{Resolve}(V_1(\{ \vec{v}, -\vec{v} \}, r)) = \texttt{ResolutionLine}
+\]
+
+\textbf{TensionPoint (n = 2).}  
+Produced when two directional pairs (and their inverses) stabilize a planar structure. The `TensionPoint` represents a 2D convergence of direction — a kind of structural balance. Closure requires \( 360^\circ \), typically from two mirrored triangles. Example:
+
+\[
+\texttt{Resolve}(V_2(\{ \vec{v}_1, \vec{v}_2, -\vec{v}_1, -\vec{v}_2 \}, r)) = \texttt{TensionPoint}
+\]
+
+\textbf{Void (n = 3).}  
+The canonical 3D Formatics resolution. When three or more directions form a closed triangle cycle totaling \( 540^\circ \), the result is a `Void` — a semantically complete structure that encloses no volume but forms a minimal relational shell. This corresponds to a stable 3-triangle closure. Symbolically:
+
+\[
+\texttt{Resolve}(V_3(\{ \vec{v}_1, \vec{v}_2, \vec{v}_3 \}, r)) = \texttt{Void}
+\]
+
+\textbf{EnclosedVolume (n = 4).}  
+A Formatics tetrahedron: four directions, six triangles, and total angle closure of \( 720^\circ \). The semantic result is a true interior structure — a volume bounded by triangulated faces. Example:
+
+\[
+\texttt{Resolve}(V_4(\{ \vec{v}_1, \vec{v}_2, \vec{v}_3, \vec{v}_4 \}, r)) = \texttt{EnclosedVolume}
+\]
+
+\textbf{ResolvedManifoldₙ (n > 4).}  
+For higher-dimensional Formatics systems, resolution requires a complex of triangles forming a closed, orientable, high-dimensional boundary. These results are denoted \texttt{ResolvedManifoldₙ} and represent topologically closed Formatics spaces in \( \mathbb{R}^n \). Their angle closure is given by:
+
+\[
+\text{AngleClosure} = 180^\circ \cdot \binom{|D|}{3}
+\]
+
+and their structural form must satisfy global consistency conditions (e.g., no boundary gaps, consistent triangle adjacency). Symbolically:
+
+\[
+\texttt{Resolve}(V_n(D, r)) = \texttt{ResolvedManifold}_n, \quad |D| > 4
+\]
+
+\textbf{ResolutionFailure (⊥).}  
+If any of the following holds:
+- \( \text{Stabilize}(D) = \emptyset \)
+- \( \sum \angle < \text{AngleClosure} \)
+- \( D \) contains fewer than 3 directions
+- Any required triangle is invalid or missing
+
+then the resolution fails:
+
+\[
+\texttt{Resolve}(V_n(D, r)) = \bot
+\]
+
+This terminal state indicates an unrecoverable logical or geometric failure. No semantic result is produced. The failure is propagated upward in recursive or compositional structures.
+
+\textbf{Semantic Finality.}  
+Once a \texttt{SemanticResultₙ} is produced, the evaluation path for that vertex space is complete. These results are final values in the Formatics type system — not to be further transformed, rewritten, or decomposed. In this sense, they serve the role of both values and types: each `SemanticResult` is both a resolved structure and a typed proof object representing a valid Formatics computation.
+
+In total, \texttt{SemanticResultₙ} defines the convergence point of Formatics evaluation — a typed declaration that a structure has resolved both geometrically and logically. These values act as the true outputs of Formatics resolution logic and support composition, labeling, and further inference across vertex chains.
+
+\subsection*{B.2.3 — Typed Function Signatures}
+
+To support formal evaluation, composition, and inference, Formatics defines a set of core operations, each with a fixed domain and codomain. These functions operate over typed structures introduced in B.2.1 and produce typed semantic results as described in B.2.2. The behavior of each operation is constrained by both the structure of the input and the semantic conditions of resolution.
+
+Each function is declared with an explicit type signature in the style of typed functional languages. These signatures define not only how Formatics structures interact, but also which combinations are invalid or yield terminal failure (⊥).
+
+\textbf{Stabilize}
+
+\[
+\texttt{Stabilize} : \texttt{DirectionSet} \to \texttt{TriangleSet}
+\]
+
+Given a finite set of normalized vectors \( D = \{ \vec{v}_1, \dots, \vec{v}_k \} \), the `Stabilize` function produces all valid triangles \( \Delta_{ijk} \) such that \( i < j < k \) and the vectors are affinely independent. If no valid triangles exist, the result is an empty set. This function never fails to return a value, but the result may be degenerate.
+
+---
+
+\textbf{AngleClosure}
+
+\[
+\texttt{AngleClosure} : \texttt{VertexSpace}[n] \to \texttt{AngleSum}
+\]
+
+This function computes the total internal angle across all triangles in a stabilized vertex space \( \mathcal{V}_n(D, r) \). It assumes a prior call to `Stabilize(D)` and sums the angles of the resulting triangle set. Its output is a scalar value in degrees.
+
+---
+
+\textbf{Resolve}
+
+\[
+\texttt{Resolve} : \texttt{VertexSpace}[n] \to \texttt{ResolutionForm}_n \cup \bot
+\]
+
+The central Formatics evaluator. It:
+1. Stabilizes the direction set \( D \)
+2. Computes total angle via `AngleClosure`
+3. Compares to expected closure value (per Axiom 4)
+4. Returns a typed semantic result if closure is exact
+5. Otherwise returns ⊥ (ResolutionFailure)
+
+This function defines the boundary between syntactic structure and semantic output.
+
+---
+
+\textbf{Normalize}
+
+\[
+\texttt{Normalize} : \texttt{ResolveTrace} \to \texttt{ResolutionForm}_n \cup \bot
+\]
+
+This function compresses an evaluation trace (Stabilize → AngleSum → Resolve) into a canonical result. It removes redundant or out-of-order components and returns a minimal, typed representation of the result. It also collapses recursive traces once subvertices are resolved. Only normalizable traces yield valid semantic results; otherwise, ⊥ is returned.
+
+---
+
+\textbf{F (Aggregation Function)}
+
+\[
+F : [\texttt{ResolutionForm}_k] \to \texttt{ResolutionForm}_n \cup \bot
+\]
+
+Used for recursive structures. Given a list of subvertex results, `F` computes whether their combination satisfies the structural requirements for their parent vertex space. The function verifies geometric adjacency, triangle completeness, and closure. If any input is ⊥, the entire result is ⊥. This function governs resolution in recursive Formatics (see A.7.1.a).
+
+---
+
+\textbf{Compose}
+
+\[
+\texttt{Compose} : \texttt{VertexSpace}[n] \times \texttt{VertexSpace}[n] \to \texttt{VertexSpace}[n] \cup \texttt{InvalidComposition}
+\]
+
+This function merges two vertex spaces into a single system, assuming the output of one is used as an input to the other. It requires:
+- Both vertex spaces resolve independently (≠ ⊥)
+- The output of \( V_n^{(A)} \) is an element of the direction set of \( V_n^{(B)} \)
+
+If these conditions are satisfied, the result is a new vertex space \( V_n^{(C)} \). If not, the function returns `InvalidComposition`, a distinct failure type from ⊥ that denotes type mismatch rather than stabilization failure.
+
+---
+
+\textbf{Error Behavior and Type Propagation.}  
+Each function enforces strict input validation:
+
+- `Stabilize` is total: always returns a (possibly empty) set.
+- `AngleClosure` is partial: assumes prior stabilization.
+- `Resolve` is partial: returns ⊥ for failed closure or invalid inputs.
+- `Normalize` collapses traces; it may fail if the trace includes ⊥.
+- `F` is strict: ⊥ in any argument yields ⊥.
+- `Compose` requires structural compatibility, and fails with a distinct `InvalidComposition` result.
+
+This separation of error cases allows Formatics systems to track the reason for failure and distinguish between malformed geometry and logical type errors.
+
+---
+
+In summary, typed function signatures in Formatics offer a compositional and verifiable framework for geometric logic evaluation. Each function has a well-defined role, a clear domain/codomain relationship, and contributes to the larger resolution pipeline that maps direction sets to semantic truth. These signatures are foundational for building evaluators, proof engines, and automated normalization tools.
+
+
+\subsection*{B.2.4 — Inference and Evaluation Semantics}
+
+With typed signatures established for Formatics operations, we now define the evaluation semantics of Formatics expressions as a structured inference process. This section explains how Formatics maps typed inputs to semantic outputs, how evaluation traces proceed deterministically, and how resolution equates to logical truth under geometric closure conditions.
+
+\textbf{Typed Inference Judgment.}  
+Each Formatics expression \( E \) is evaluated within a type context \( \Gamma \), producing a semantic result of type \( \tau \). The standard inference form is:
+
+\[
+\Gamma \vdash E : \tau
+\]
+
+For example:
+
+\[
+\Gamma \vdash \texttt{Resolve}(V_3(D, r)) : \texttt{Void}
+\]
+
+Here, the environment \( \Gamma \) includes assumptions about the direction set \( D \), its validity, and the geometric properties of the vertex space \( V_3 \).
+
+\textbf{Evaluation Path Structure.}  
+Evaluation proceeds in a standard pipeline, transforming low-level inputs to high-level semantic results:
+
+\[
+\begin{aligned}
+& \texttt{DirectionSet} \quad \xrightarrow{\texttt{Stabilize}} \quad \texttt{TriangleSet} \\
+& \quad \quad \xrightarrow{\texttt{AngleClosure}} \quad \texttt{AngleSum} \\
+& \quad \quad \xrightarrow{\texttt{Resolve}} \quad \texttt{SemanticResult}_n \quad \text{or } \bot
+\end{aligned}
+\]
+
+Each step is type-checked and deterministic: the output of one stage becomes the input of the next, and the process halts either in a final semantic result or in the bottom value \( \bot \).
+
+\textbf{Resolve as Logical Evaluation.}  
+The `Resolve` function acts as a Formatics analog of logical validation or model checking. The expression:
+
+\[
+\texttt{Resolve}(V_n(D, r)) = \texttt{SemanticResult}_n
+\]
+
+is interpreted as a typed truth judgment: the directional system \( D \) stabilizes, satisfies its closure condition, and produces a result of type \( \texttt{ResolvedOutput} \).
+
+If the angle sum fails to meet the required closure, or if stabilization fails entirely, the evaluation yields:
+
+\[
+\texttt{Resolve}(V_n(D, r)) = \bot
+\]
+
+This failure corresponds to a logical contradiction or unsatisfied condition — the Formatics system cannot infer a valid structure.
+
+\textbf{Determinism and Totality.}  
+Formatics evaluation is \textit{deterministic}: the same input produces the same result without ambiguity. However, the system is not total: not all inputs yield valid outputs. This reflects a logic of partial functions, where only well-formed directional structures lead to resolvable conclusions.
+
+No non-deterministic branching or probabilistic evaluation occurs in standard Formatics resolution. The result is uniquely defined for any given vertex space, assuming all inputs are valid.
+
+\textbf{Evaluation as Logical Inference.}  
+Stabilization and angle closure form a chain of inferential rules. For instance:
+
+\[
+\texttt{Stabilize}(D) = \{ \Delta_1, \Delta_2, \Delta_3 \} \\
+\Rightarrow \sum \angle(\Delta_i) = 540^\circ \\
+\Rightarrow \texttt{Resolve}(V_3(D, r)) = \texttt{Void}
+\]
+
+This sequence corresponds to a deductive path, where each operation applies a rule that narrows the result space and drives the structure toward semantic completion. These rules can be interpreted analogously to logical entailment:
+
+\[
+\texttt{Stabilize}(D),\ \texttt{AngleClosure}(V_n) \vdash \texttt{Resolve}(V_n) : \tau
+\]
+
+\textbf{Evaluation in Recursive Structures.}  
+In recursive Formatics systems, subvertices are evaluated independently, and their results are aggregated using function \( F \). The parent vertex resolves only if all children resolve successfully and their combination satisfies closure:
+
+\[
+\forall k,\ \texttt{Resolve}(\texttt{SubV}_k) = \texttt{SemanticResult}_k \\
+\Rightarrow F(\texttt{SemanticResult}_1, \dots, \texttt{SemanticResult}_m) = \texttt{SemanticResult}_n
+\]
+
+This rule mirrors recursive function evaluation or structural induction in formal systems.
+
+\textbf{Truth Conditions and Logical Closure.}  
+Formatics evaluation is truth-directed: the successful production of a semantic result signifies the satisfaction of a geometric truth condition. The angle closure test serves as the system's analogue to logical validity or proof completion.
+
+In this way, Formatics defines a geometry-based logic where inference is spatial, structure is typed, and truth is realized through angular stability.
+
+\textbf{Summary.}  
+Formatics evaluation operates as a deterministic, typed inference system. Direction sets are transformed step-by-step into triangles, angles, and finally semantic results, with failure marked unambiguously by ⊥. The evaluation semantics align with formal logic: they are rule-driven, recursively composable, and truth-conditioned. Formatics can thus be interpreted as a typed logical framework where inference emerges from geometric stabilization.
+
+\subsection*{B.2.5 — Typing Failures and Semantic Boundary Conditions}
+
+In any formal system, well-typed expressions must also account for failure cases — inputs or structures that, while syntactically valid, cannot be evaluated into meaningful semantic results. In Formatics, these failures are not exceptions or runtime errors; they are first-class logical entities, represented explicitly by the terminal type ⊥ (ResolutionFailure).
+
+This section formalizes how failure propagates, how it is distinguished from compositional errors, and what boundary conditions separate evaluable Formatics expressions from invalid ones.
+
+\textbf{The Bottom Type (⊥).}  
+The bottom element of the Formatics type system is ⊥, representing resolution failure. It is introduced by the rule:
+
+\[
+\texttt{Resolve}(V_n(D, r)) = \bot
+\quad \text{if and only if} \quad
+\sum \angle(\Delta_i) \ne \texttt{AngleClosure}(V_n)
+\]
+
+⊥ is a total failure type. It is:
+- \textbf{Atomic}: it cannot be decomposed.
+- \textbf{Terminal}: it cannot be transformed, rewritten, or used as an input to resolution.
+- \textbf{Non-evaluable}: any function receiving ⊥ yields ⊥.
+
+In typing terms:
+\[
+\forall f,\ f(\bot) = \bot
+\]
+
+This aligns with the concept of bottom types in typed lambda calculi and functional programming — a universal subtype that inhabits no valid structure.
+
+---
+
+\textbf{Failure Modes.}  
+Resolution failure occurs under any of the following boundary conditions:
+
+- **Insufficient Input Size**:
+  \[
+  |D| < 3 \Rightarrow \texttt{Stabilize}(D) = \emptyset
+  \Rightarrow \texttt{Resolve}(V_n(D, r)) = \bot
+  \]
+
+- **Degenerate Triangles**:
+  All candidate triplets in \( D \) are colinear or non-distinct. Stabilization yields no valid triangle set.
+
+- **Angle Deficit**:
+  The total angle from stabilized triangles does not match the expected value defined by Axiom 4.
+
+- **Subvertex Failure**:
+  In recursive structures, any subvertex resolving to ⊥ causes the parent evaluation to fail:
+  \[
+  \exists k : \texttt{Resolve}(\texttt{SubV}_k) = \bot \Rightarrow \texttt{Resolve}(V_n) = \bot
+  \]
+
+- **Structural Incompleteness**:
+  Stabilization yields an incomplete set of triangle faces for the intended dimensional resolution.
+
+---
+
+\textbf{Compositional Failure: InvalidComposition.}  
+A separate failure state arises in the `Compose` function, when two resolvable vertex spaces cannot be meaningfully joined. This produces a different failure type:
+
+\[
+\texttt{Compose}(V_n^{(A)}, V_n^{(B)}) = \texttt{InvalidComposition}
+\]
+
+This occurs if:
+- The output of \( V_n^{(A)} \) is not present in the direction set of \( V_n^{(B)} \)
+- Either vertex fails to resolve independently
+- The composed structure does not meet the angle closure requirement
+
+This failure is logical rather than structural. Unlike ⊥, `InvalidComposition` does not arise from geometric instability but from the type mismatch of domain and codomain. It is treated as a type safety violation, not a resolution failure.
+
+---
+
+\textbf{Failure Propagation Rules.}
+
+To ensure logical consistency, the following propagation rules apply:
+
+- If any subcomponent evaluates to ⊥, the parent evaluation also yields ⊥.
+- ⊥ is contagious under all Formatics functions:
+  \[
+  \texttt{Normalize}(\bot) = \bot, \quad F(\bot, R_2, \dots) = \bot
+  \]
+- InvalidComposition halts further compositional evaluation; it does not propagate through other functions.
+
+This strict separation allows for failure tracing and ensures that Formatics evaluators can distinguish between internal structural breakdowns and illegal input chaining.
+
+---
+
+\textbf{Semantic Boundaries.}
+
+Formatics is not total: not all syntactically valid expressions yield semantic results. This reflects a key design choice — Formatics defines a space of **permitted semantic geometries**, not arbitrary computations. The boundary between resolution and failure marks the limits of Formatics logic:
+
+- The system admits only direction sets that stabilize into triangle sets with full angular closure.
+- Anything outside this region — incomplete, underdetermined, over-angled, malformed — is typed as ⊥.
+- These boundaries are **explicit and enforceable** at the type level, allowing Formatics to function as a strongly typed logic system.
+
+---
+
+\textbf{Summary.}  
+This section completes the Formatics type system by defining the semantics of failure. The ⊥ type marks geometric or logical instability, while `InvalidComposition` signals a type-mismatch between structures. These boundary markers ensure that Formatics evaluation is both verifiable and confined — every result is either well-typed or definitively rejected, with no ambiguity about state or progression. In this way, Formatics preserves logical integrity through typed failure states and deterministic evaluation flow.
+
+
+\subsection*{B.3.1 — Directional Negation as Involution}
+
+In classical logic, negation is defined as an involutive operator: applying it twice returns the original proposition. Formatics preserves this principle, but recasts it geometrically: negation is not a change in truth-value, but a reversal of direction.
+
+The Formatics system defines negation as vector inversion. If \( v \in \texttt{Direction} \), then:
+
+\[
+-v := -1 \cdot v
+\]
+
+This is not symbolic negation but geometric reversal on the unit sphere \( S^{n-1} \). In this sense, the operation:
+
+\[
+v \vdash -v
+\]
+
+declares not just that negation exists, but that it is **inferred** from a directional primitive — a structural requirement of the system.
+
+\textbf{Axiom Link.}  
+Axiom 2 (Directional Inversion) [see A.1] formalizes this:
+
+\[
+\vec{v}_1 \vdash -\vec{v}_1
+\]
+
+This rule can be read logically: “The presence of a direction implies its opposite.” Unlike in propositional logic, where \( \neg A \) may or may not hold, in Formatics the inverse is always **constructively available**.
+
+\textbf{Involution Property.}  
+Negation is involutive in Formatics:
+
+\[
+-(-v) = v
+\]
+
+This satisfies the identity:
+
+\[
+\neg (\neg A) = A
+\]
+
+but in geometric form. Since all Formatics directions are normalized vectors on \( S^{n-1} \), inversion reflects each point across the origin — a canonical involution.
+
+\textbf{Semantic Role.}  
+Negation enables semantic pairing of directions and is essential for 1D and 2D resolution. In particular:
+
+- In 1D:
+  \[
+  \texttt{Stabilize}(\{v, -v\}) \Rightarrow [\Delta(v, -v, 0)] \\
+  \texttt{Resolve}(V_1(\{v, -v\}, r)) = \texttt{ResolutionLine}
+  \]
+
+- In 2D:
+  \[
+  D = \{v_1, v_2, -v_1, -v_2\} \Rightarrow \texttt{TensionPoint}
+  \]
+
+Thus, negation is not only an inference rule — it is a **structural enabler** of semantic resolution.
+
+\textbf{Negation as Structural Symmetry.}  
+Where classical logic treats \( \neg A \) as a contradictory value, Formatics treats \( -v \) as a **mirror relationship**. The system is fundamentally symmetric under inversion:
+
+\[
+\texttt{Stabilize}(D) \equiv \texttt{Stabilize}(-D) \\
+\texttt{AngleClosure}(V_n(D)) = \texttt{AngleClosure}(V_n(-D))
+\]
+
+This symmetry is captured in Theorem 4.4 (Algebraic Symmetry via Inversion) [see A.5].
+
+Hence:
+
+\[
+V_n(D, r) \equiv V_n(-D, r)
+\]
+
+Negation does not “flip truth,” it **preserves structure** by enforcing relational completeness. Every Formatics direction carries with it a topological opposite, and only their combination completes lower-dimensional resolutions.
+
+\textbf{Logical Interpretation.}  
+We interpret \( v \vdash -v \) as a **geometric entailment**: every directional assertion requires its dual to ensure stabilizability. It is the geometric form of logical duality — not contradiction, but **completion**.
+
+This is one of Formatics' key deviations from classical logic. Instead of modeling negation as opposition of truth values, Formatics models it as **complementary spatial resolution**. In doing so, negation becomes not destructive, but constructive — it enables closure.
+
+\textbf{Summary.}  
+Directional negation in Formatics is involutive, symmetric, and constructive. It arises not from truth inversion, but from structural necessity. The Formatics system requires every direction to carry its inverse, ensuring closure in 1D, tension in 2D, and symmetry throughout. Negation becomes a geometric dual, essential to the logic of stabilization.
+
+\subsection*{B.3.2 — Triangular Conjunction and Stabilized Closure}
+
+In classical logic, conjunction (\( A \land B \)) represents the simultaneous truth of two statements. In Formatics, conjunction is realized geometrically: three directions that jointly stabilize into a triangle express a structural relation that none can achieve alone.
+
+The core inference rule for triangle formation is given in Axiom 3 [see A.1]:
+
+\[
+\{v_i, v_j, v_k\} \vdash \Delta(v_i, v_j, v_k)
+\]
+
+This is the Formatics analogue of logical conjunction — the triangle is a unit of stabilizing truth that emerges only when all three directions participate.
+
+\textbf{Interpretation as Logical Clause.}  
+Each triangle \( \Delta(v_i, v_j, v_k) \) represents a Formatics clause — a minimal relational enclosure. The triangle cannot exist if any single vector is omitted or redundant. This encodes the condition:
+
+\[
+(v_i \land v_j \land v_k) \Rightarrow \texttt{RelationalClosure}
+\]
+
+In this way, Formatics triangles are not mere shapes, but **geometric sentences**: they assert the co-validity of the directions that compose them.
+
+\textbf{Structural Independence.}  
+To form a valid triangle, the direction vectors must be **affinely independent** — no one vector may lie in the span of the other two. This independence mirrors logical distinctness in classical conjunctions: each conjunct must contribute new information.
+
+\textbf{Role in Stabilization.}  
+The function:
+
+\[
+\texttt{Stabilize}(D) \to \{\Delta_i\}
+\]
+
+produces a set of triangle-based conjunctions from the direction set \( D \). These triangles collectively define the **relational geometry** of the system. Each triangle is a unit of closure, and only when enough such units exist can the system resolve.
+
+\textbf{Resolution Requires Conjunction.}  
+No Formatics structure can resolve unless its directions form one or more complete triangles. For example:
+
+- \( |D| < 3 \Rightarrow \texttt{Stabilize}(D) = \emptyset \Rightarrow \texttt{Resolve} = \bot \)
+- A triangle with affinely dependent vectors yields no resolution.
+
+Thus, **conjunction is not optional** in Formatics: it is structurally mandatory. Semantic results emerge only from systems that contain enough conjunctive (triangular) support to achieve closure.
+
+\textbf{Conjunction as Evaluative Bridge.}  
+In Formatics, conjunction serves a more powerful role than in classical logic. It is the bridge between:
+
+- Local relations: each triangle stabilizes a specific subset of \( D \)
+- Global resolution: their collective angle sum determines semantic truth
+
+The triangles encode localized conjunctions; their aggregation encodes systemic completeness.
+
+\textbf{Minimal Proof Units.}  
+Each triangle may be interpreted as a Formatics proof step — a structural clause validating the co-presence and co-alignment of three directional statements. These units are not reducible to pairs or singletons; they are **irreducible semantic atoms** of Formatics logic.
+
+This reflects the system's constructive nature: truth is not binary or symbolic, but formed through the triangulated resolution of relational inputs.
+
+\textbf{Summary.}  
+Triangular formation in Formatics functions as spatial conjunction. Each triangle is a clause: it affirms that three directions collectively stabilize, forming a relational truth unit. These conjunctions are minimal, constructive, and geometrically necessary. Without them, no resolution is possible — they are the fundamental logical components of Formatics structure.
+
+\subsection*{B.3.3 — Angle Closure as Truth Condition}
+
+In Formatics, the notion of “truth” is not an abstract symbol or Boolean state. It is a measurable, geometric condition: a vertex space is considered semantically true when all of its stabilized triangle relations collectively achieve exact angular closure.
+
+This central idea is formalized by Axiom 4 [see A.1]:
+
+\[
+\texttt{AngleClosure}(\mathcal{V}_n(D, r)) =
+\begin{cases}
+180^\circ & |D| = 1 \\
+360^\circ & |D| = 2 \\
+180^\circ \cdot \binom{|D|}{3} & |D| \geq 3
+\end{cases}
+\]
+
+The output of this function defines the expected angle sum necessary for semantic resolution. A Formatics system is considered true — that is, evaluatively complete — if and only if:
+
+\[
+\sum_{\Delta \in \texttt{Stabilize}(D)} \angle(\Delta) = \texttt{AngleClosure}(\mathcal{V}_n)
+\]
+
+This condition becomes the Formatics truth test. It determines whether a structure, however complex or recursive, stabilizes into a semantically meaningful object.
+
+---
+
+\textbf{Truth as Closure.}  
+Unlike classical logic, where truth is assigned externally to variables or propositions, Formatics defines truth intrinsically — through geometric consistency. A structure is true only when it is closed.
+
+This parallels model theory, where a formula is satisfied only if it holds under some interpretation. In Formatics, the interpretation is structural and internal: angle closure is the model.
+
+---
+
+\textbf{Failure as Incompleteness.}  
+If the angle sum is insufficient or exceeds the required closure, the system cannot stabilize:
+
+\[
+\sum \angle < \texttt{AngleClosure} \quad \Rightarrow \quad \texttt{Resolve}(\mathcal{V}_n) = \bot
+\]
+
+This reflects a logic of partial evaluation: only well-formed directional systems produce valid results. The system does not tolerate overclosure or ambiguity — it accepts only exact stability.
+
+---
+
+\textbf{Constructive Logic Perspective.}  
+This condition aligns Formatics with constructive (intuitionistic) logic. In constructive logic:
+
+- A proposition is only true if it can be proven
+- Negation means lack of proof
+- Truth depends on construction, not assumption
+
+Formatics mirrors this:
+- A vertex space is only true if it fully stabilizes
+- No stabilization means failure (⊥), not “false” in a classical sense
+- Truth is an emergent property of resolution, not an assigned label
+
+---
+
+\textbf{SemanticResult as Truth Value.}  
+Each \texttt{SemanticResultₙ} is the Formatics version of a truth value — but richer and typed. Instead of \( \texttt{TRUE} \), we get:
+
+- \texttt{ResolutionLine} (1D truth)
+- \texttt{TensionPoint} (2D truth)
+- \texttt{Void} (3D truth)
+- \texttt{EnclosedVolume} (4D truth)
+- \texttt{ResolvedManifold}_n (truth in \( \mathbb{R}^n \))
+
+These are not abstract markers; they are resolved, dimension-specific, structurally justified outputs.
+
+---
+
+\textbf{Logical Consequence.}  
+The implication chain in Formatics becomes:
+
+\[
+\texttt{Stabilize}(D) \Rightarrow \texttt{TriangleSet} \Rightarrow \sum \angle \Rightarrow \texttt{AngleClosure matched} \Rightarrow \texttt{Resolve} = \texttt{SemanticResult}
+\]
+
+Each step acts as a rule of inference. Failure at any stage halts the evaluation — the system cannot derive a truth result.
+
+---
+
+\textbf{Summary.}  
+Angle closure in Formatics is equivalent to logical truth. It is a structural condition that defines when a directional system is semantically complete. Closure is exact, measurable, and dimension-specific. Formatics does not assign truth — it proves it through geometric resolution. Truth is not a symbol; it is a consequence of relational closure.
+
+\subsection*{B.3.4 — Implication, Composition, and Relational Flow}
+
+In Formatics, logical implication emerges not through truth tables or propositional substitution, but through structural chaining — when the resolution of one vertex space provides the necessary input for another. Implication is realized through the \texttt{Compose} function, which defines how semantic results from one structure propagate into the resolution of another.
+
+\textbf{Formatics Composition.}  
+Recall the function signature:
+
+\[
+\texttt{Compose} : \texttt{VertexSpace}[n] \times \texttt{VertexSpace}[n] \to \texttt{VertexSpace}[n] \cup \texttt{InvalidComposition}
+\]
+
+Composition is only valid when:
+
+1. \( \texttt{Resolve}(V_A) = R_A \ne \bot \)
+2. \( R_A \in D_B \), the direction set of \( V_B \)
+3. \( \texttt{Resolve}(V_B) \ne \bot \)
+
+These conditions define a directional implication: the output of one vertex space becomes a valid input to another, enabling its resolution.
+
+---
+
+\textbf{Implication as Input Dependency.}  
+This can be interpreted logically as:
+
+\[
+\texttt{Resolve}(V_A) = R_A \quad \land \quad R_A \in D_B \Rightarrow \texttt{Resolve}(V_B)
+\]
+
+We read this as: “If \( V_A \) stabilizes and produces result \( R_A \), and if \( R_A \) is a directional input to \( V_B \), then \( V_B \) becomes resolvable.” This dependency expresses implication through input flow, not through symbol substitution.
+
+---
+
+\textbf{Resolution as Functional Application.}  
+Implication becomes a form of geometric function evaluation:
+
+\[
+f_V : D \mapsto \texttt{SemanticResult}_n
+\]
+
+Chaining these gives:
+
+\[
+f_1(D_1) = R_1 \quad \text{and} \quad f_2(D_2 \cup \{R_1\}) = R_2
+\]
+
+Thus:
+
+\[
+f_2 \circ f_1 : D_1 \cup D_2 \mapsto R_2
+\]
+
+This reflects the semantic flow of implication: the truth of one structure (by resolution) activates the evaluation of another.
+
+---
+
+\textbf{Compositional Inference.}  
+The structure of chained composition in Formatics forms an inference graph:
+
+\[
+V_1 \Rightarrow V_2 \Rightarrow V_3 \Rightarrow \dots \Rightarrow V_k
+\]
+
+Where each arrow is a valid \texttt{Compose} operation and each \( V_i \) resolves successfully. This defines a Formatics proof chain: a sequence of vertex resolutions whose semantic results feed forward.
+
+---
+
+\textbf{Failure as Implication Block.}  
+If any intermediate \( V_j \) fails to resolve (\( \texttt{Resolve}(V_j) = \bot \)), the composition fails:
+
+\[
+\texttt{Compose}(V_j, V_{j+1}) = \texttt{InvalidComposition}
+\]
+
+This expresses non-entailment: the structure does not admit implication because it fails to stabilize.
+
+---
+
+\textbf{Implication vs. Truth.}  
+Note the distinction:
+
+- \textbf{Truth} in Formatics is angular closure within a single structure (see B.3.3)
+- \textbf{Implication} is the transfer of semantic results between structures via directional input
+
+One occurs within a vertex space; the other connects them.
+
+---
+
+\textbf{Higher-Order Composition.}  
+Formatics implication is transitive when intermediate results remain valid:
+
+\[
+\texttt{Resolve}(V_A) = R_A,\ R_A \in D_B,\ \texttt{Resolve}(V_B) = R_B,\ R_B \in D_C \Rightarrow \texttt{Resolve}(V_C)
+\]
+
+This allows chaining:
+
+\[
+\texttt{Compose}(V_A, V_B) \Rightarrow V_{AB},\quad \texttt{Compose}(V_{AB}, V_C) = V_{ABC}
+\]
+
+This mirrors function composition in logic or category theory — morphisms of resolution.
+
+---
+
+\textbf{Summary.}  
+Implication in Formatics is implemented through composition: if the resolution of one vertex space provides directional input to another, a chained resolution becomes possible. This structure defines Formatics inference not as symbolic deduction, but as relational flow across stabilized semantic forms. Implication becomes a dynamic transfer of directional closure.
+
+Absolutely — here is the **synthesized `.txt` block** of the full response for **B.3.5 — Resolution as Proof Evaluation**, ready for direct copy-paste into `FormaticsExpansion.txt`:
+
+---
+
+````
+\subsection*{B.3.5 — Resolution as Proof Evaluation}
+
+In Formatics, evaluation is not merely a transformation of inputs into outputs. It is a proof process — a structured sequence of geometric and logical validations that determine whether a directional system constitutes a semantically complete object. The `Resolve` function, along with `Stabilize` and `AngleClosure`, together form the operational backbone of Formatics logic, equivalent to a proof engine in formal systems.
+
+Each Formatics evaluation trace corresponds to a constructive proof of semantic resolution.
+
+\textbf{Proof Components.}  
+A Formatics proof has the following canonical form:
+
+\[
+\begin{aligned}
+& \texttt{Stabilize}(D) = \{ \Delta_1, \Delta_2, \dots, \Delta_k \} \\
+& \sum \angle(\Delta_i) = A \\
+& A = \texttt{AngleClosure}(\mathcal{V}_n) \\
+& \Rightarrow \texttt{Resolve}(\mathcal{V}_n) = \texttt{SemanticResult}_n
+\end{aligned}
+\]
+
+Each line corresponds to a proof step:
+1. Premise formation (triangles from directions)
+2. Quantitative verification (angle accumulation)
+3. Logical test (closure comparison)
+4. Conclusion (typed semantic result)
+
+If any step fails, the proof terminates with ⊥ — the structure is unresolved and cannot yield a logical truth.
+
+\textbf{Inference as Proof Step.}  
+Each triangle \( \Delta(v_i, v_j, v_k) \) can be seen as a primitive proof clause. It asserts that three directions mutually stabilize — a geometric conjunction (see B.3.2).
+
+A triangle therefore plays the role of a logical lemma — a local truth that contributes to the global evaluative result. The sum of all triangle angles is the accumulated weight of these lemmas.
+
+\textbf{Closure as Proof Completion.}  
+The angle closure check acts as a final proof condition:
+
+\[
+\texttt{AngleClosure}(\mathcal{V}_n) \quad \text{⇔} \quad \texttt{Truth}
+\]
+
+Just as classical logic requires derivability from axioms, Formatics requires geometric closure. Without it, the evaluation trace is incomplete and cannot certify the structure as semantically resolved.
+
+\textbf{Proof Traces.}  
+Formatics supports full traceability of resolution:
+
+```plaintext
+Input:
+  V3({v1, v2, v3}, r)
+
+Trace:
+  Stabilize({v1, v2, v3}) 
+    ⇒ [Δ(v1, v2, v3), Δ(v2, v3, v1), Δ(v3, v1, v2)]
+  ∑ angle = 3 × 180° = 540°
+  ExpectedClosure(V3) = 540°
+  ⇒ Resolve(V3) = Void
+````
+
+This trace mirrors a formal proof, with each operation functioning as an inference rule.
+
+\textbf{Recursive Proofs.}
+In recursive Formatics structures, subvertices function as subproofs. Each subvertex must resolve before the parent structure can conclude:
+
+$$
+\forall k,\ \texttt{Resolve}(\texttt{SubV}_k) = R_k \Rightarrow F(R_1, \dots, R_m) = R_n
+$$
+
+Failure of any subproof yields ⊥ for the overall structure. Recursive stabilization thus acts as structural induction over geometric depth.
+
+\textbf{Compositional Proofs.}
+Composition chains also form multi-stage proofs:
+
+$$
+\texttt{Resolve}(V_A) = R_A,\ R_A \in D_B \Rightarrow \texttt{Resolve}(V_B)
+\Rightarrow \texttt{Compose}(V_A, V_B) = V_C
+\Rightarrow \texttt{Resolve}(V_C) = R_C
+$$
+
+This mirrors sequents or morphism chaining in formal logic systems and category theory.
+
+\textbf{Completeness and Termination.}
+A Formatics proof either:
+
+* Terminates successfully in a \texttt{SemanticResultₙ}
+* Or halts with ⊥ due to stabilization failure or unmet closure
+
+There is no infinite recursion, probabilistic ambiguity, or partial evaluation — Formatics proofs are deterministic and conclusive.
+
+\textbf{Summary.}
+Every Formatics evaluation is a proof: it begins with direction sets, constructs triangle-based lemmas, verifies angular consistency, and concludes with a semantic result or failure. These traces are structured, typed, and composable. The Formatics logic system is therefore not only a geometric computation — it is a full constructive proof framework grounded in spatial reasoning.
+
+\subsection*{B.3.6 — Expressivity Beyond Classical Logic}
+
+Formatics is not just a reinterpretation of logic — it is a geometric extension of it. While classical logic operates over symbolic propositions and truth tables, Formatics operates over directional relations, stabilization structures, and closure conditions. This shift from symbolic to spatial logic introduces a broader expressive capacity, enabling Formatics to model constructs and behaviors that classical logic cannot natively represent.
+
+---
+
+\textbf{1. Geometric Structure, Not Just Truth Values.}  
+Classical logic abstracts away the structure of inference. In contrast, Formatics encodes the \textit{geometry} of reasoning. Triangles are not just conjunctions — they are topological objects with definable orientation and angular content.
+
+This means Formatics can express:
+- Relative positioning
+- Symmetry and duality
+- Topological connectedness
+- Directional inference paths
+
+These structural features are not available to systems built only on truth assignments.
+
+---
+
+\textbf{2. Angular Semantics.}  
+Formatics defines truth quantitatively: through exact angle sums. There is no analog in classical logic for a truth condition that is continuous, metric-based, and resolution-dependent.
+
+This allows Formatics to:
+- Evaluate “how close” a structure is to resolving (by comparing partial angle sums)
+- Represent graded, compositional progress toward semantic completion
+- Encode not just logical success or failure, but how closure emerges geometrically
+
+No truth table or Boolean lattice can capture this form of measured truth.
+
+---
+
+\textbf{3. Triangular Logic.}  
+Most logical systems are binary in construction — based on pairs: \( A \Rightarrow B \), \( A \land B \), etc. Formatics is \textit{trinary} at its core: triangles are the irreducible unit of inference.
+
+This unlocks:
+- Higher-order dependency modeling (all 3 inputs required)
+- Minimum stabilizing relations that involve more than binary conditions
+- A new form of logical minimality: triangle as the smallest valid relational construct
+
+This expands expressivity beyond dyadic logical gates or binary predicates.
+
+---
+
+\textbf{4. Recursive Containment.}  
+Formatics permits recursive self-similarity: vertex spaces can contain subvertices, which themselves must resolve. The structure is fractal, typed, and hierarchically evaluable. This models:
+
+- Recursive computation
+- Nested logical environments
+- Scalable evaluation with preserved semantic conditions
+
+While classical logic can encode recursion syntactically, Formatics does so structurally — with geometric fidelity and semantic continuity at each level.
+
+---
+
+\textbf{5. Topological and Spatial Inference.}  
+Because Formatics resolution is geometric, it can represent:
+
+- Surface closure
+- Volumetric enclosures
+- Manifold boundaries
+- Semantic “holes” (as in the case of Void)
+
+These spatial inferences cannot be directly expressed in any purely symbolic system without invoking external mathematical machinery (e.g., homology, algebraic topology). Formatics makes them native to the logic itself.
+
+---
+
+\textbf{6. Symmetry and Dual Resolution.}  
+Via directional inversion and mirrored stabilization, Formatics encodes symmetric inference paths (see Theorem 4.4). Classical logic has no mechanism for expressing logical duality as geometric reflection.
+
+Formatics does:
+- Stabilize mirrored structures with equivalent semantic output
+- Express dual containment and void formation
+- Capture bidirectional logic flows
+
+---
+
+\textbf{7. Multidimensional Typed Truth.}  
+Classical logic has a single truth type: \texttt{TRUE}. Formatics defines a typed hierarchy of semantic results:
+
+\[
+\texttt{SemanticResult}_n \in \{
+\texttt{ResolutionLine},\ 
+\texttt{TensionPoint},\ 
+\texttt{Void},\ 
+\texttt{EnclosedVolume},\ 
+\texttt{ResolvedManifold}_n
+\}
+\]
+
+Each represents not just a truth value, but a resolved form with dimension-specific meaning. This type system enables semantically rich expressions of structural resolution not accessible to classical frameworks.
+
+---
+
+\textbf{Summary.}  
+Formatics surpasses classical logic by embedding logic into structure. Its semantics are geometric, recursive, directional, and typed. It introduces new forms of truth, new units of conjunction, and new rules for resolution. Where classical logic abstracts away space, Formatics embraces it — allowing inference to take shape, and truth to emerge through stabilization.
+
+Formatics does not discard symbolic logic — it expands it into space.
+
+
+Here is the `.txt`-formatted prose for **B.4.1 — Recursive Vertex Evaluation**, beginning Appendix B.4 and formalizing how Formatics evaluates recursively nested structures — a cornerstone for modeling scalable resolution and structural self-containment.
+
+---
+
+````
+\subsection*{B.4.1 — Recursive Vertex Evaluation}
+
+Formatics supports recursive structure by allowing vertex spaces to contain subvertices — smaller, self-similar structures that must resolve independently before the parent space can stabilize. This enables Formatics to model layered resolution systems, fractal containment, and recursive proof logic with full type safety and semantic traceability.
+
+A recursive vertex is defined as:
+
+\[
+\mathcal{V}_n^{(0)} = V_n(D_0, r_0),\quad \text{containing subvertices} \quad \{ \texttt{SubV}_1, \dots, \texttt{SubV}_k \}
+\]
+
+Each subvertex is a contracted copy of the parent space:
+
+\[
+\texttt{SubV}_i := V_n(D_i, r_i), \quad r_i = s^i \cdot r_0,\quad 0 < s < 1
+\]
+
+The subvertices operate at smaller radii but retain the same structural rules. Their directional sets \( D_i \) are derived from centers or relationships within the parent’s stabilized triangle set — typically through triangle centers or directional convergence zones.
+
+---
+
+\textbf{Recursive Evaluation Rule.}  
+The evaluation of a recursive vertex proceeds bottom-up:
+
+1. Evaluate each subvertex:
+   \[
+   \texttt{Resolve}(\texttt{SubV}_k) = R_k
+   \]
+2. Aggregate results:
+   \[
+   F(R_1, \dots, R_k) = R_{\text{parent}}
+   \]
+3. Return:
+   \[
+   \texttt{Resolve}(\mathcal{V}_n^{(0)}) = R_{\text{parent}}
+   \quad \text{or} \quad \bot
+   \]
+
+The process terminates either in a valid parent-level semantic result or in failure, depending on the success and compatibility of all subcomponents.
+
+---
+
+\textbf{Recursive Dependency.}  
+No subvertex is optional. If any \( \texttt{Resolve}(\texttt{SubV}_i) = \bot \), then:
+
+\[
+\texttt{Resolve}(\mathcal{V}_n^{(0)}) = \bot
+\]
+
+This enforces strict dependency between geometric layers: each level of the structure must be semantically stable for the next to resolve.
+
+---
+
+\textbf{Type Consistency.}  
+Each subvertex must have type \texttt{VertexSpace}[n], matching the dimensionality of the parent. Their semantic outputs must also be structurally compatible under the aggregation function \( F \) (see B.4.2).
+
+For example:
+- A 4D vertex must receive four resolved 2-simplex triangle results
+- A 3D recursive space must receive three triangle outputs forming a triforce
+
+Mismatch between expected and actual result types yields immediate failure.
+
+---
+
+\textbf{Geometric Interpretation.}  
+Recursive resolution models spatial refinement. Subvertices capture:
+- Triangle centers
+- Subdivision points
+- Local stabilization patterns
+
+As resolution proceeds deeper, each recursive level contracts geometrically (via decreasing radius) but maintains logical consistency. This supports modeling of:
+- Fractal geometries
+- Infinite nesting
+- Directional trees of interaction
+
+The recursive depth is limited only by geometric precision or semantic tolerance.
+
+---
+
+\textbf{Structural Induction Analogy.}  
+Recursive resolution mirrors structural induction:
+
+- Base case: smallest vertex spaces resolve directly
+- Inductive step: if all subspaces resolve, then the parent does
+- Failure at any inductive step halts evaluation
+
+This provides Formatics with a formal model for recursive proof construction and verification.
+
+---
+
+\textbf{Evaluation Trace Example.}  
+```plaintext
+Input:
+  V4(D₀, r₀) with SubV₁, SubV₂, SubV₃, SubV₄
+
+Step 1:
+  Resolve(SubV₁) = Δ₁
+  Resolve(SubV₂) = Δ₂
+  Resolve(SubV₃) = Δ₃
+  Resolve(SubV₄) = Δ₄
+
+Step 2:
+  F(Δ₁, Δ₂, Δ₃, Δ₄) = EnclosedVolume
+
+Result:
+  Resolve(V4) = EnclosedVolume
+````
+
+If any SubV fails (e.g., $\texttt{Resolve}(\texttt{SubV}_3) = \bot$), then the parent vertex fails.
+
+---
+
+\textbf{Summary.}
+Recursive vertex evaluation enables Formatics to model nested semantic systems. Each subvertex is an independently evaluated structure, and their results are aggregated into a higher-dimensional conclusion. This bottom-up resolution path allows Formatics to encode recursive proof logic, fractal geometry, and self-similar containment using a consistent type system and closure semantics.
+
+Here is the `.txt`-formatted prose for **B.4.2 — Aggregation Function $F$**, which defines the core evaluator for recursive Formatics structures. This function governs how multiple subvertex results combine into a parent-level semantic resolution — or fail.
+
+---
+
+````
+\subsection*{B.4.2 — Aggregation Function \( F \)}
+
+In recursive Formatics structures, the semantic result of a parent vertex space is not derived directly from a direction set. Instead, it is computed by aggregating the results of its internal subvertices. The function responsible for this is \( F \), the Formatics \textit{aggregation function}.
+
+The purpose of \( F \) is to synthesize a parent-level semantic result from a list of child-level results — enforcing structural, dimensional, and logical consistency across recursive layers.
+
+---
+
+\textbf{Function Signature.}
+
+\[
+F : [\texttt{SemanticResult}_k] \to \texttt{SemanticResult}_n \cup \bot
+\]
+
+This function receives a list of semantic results from \( k \) subvertices — all of type \texttt{ResolutionForm}_k — and returns either:
+- A parent-level resolution result of type \texttt{ResolutionForm}_n, or
+- Failure: \( \bot \)
+
+The value of \( n \) depends on the dimension of the parent vertex space.
+
+---
+
+\textbf{Conditions for Success.}  
+For \( F \) to return a valid \texttt{SemanticResult}_n, the following conditions must be met:
+
+1. **Complete Input Set**: All required subvertex results must be present.
+   - e.g., a 3D resolution requires exactly 3 triangle inputs.
+   - a 4D resolution requires 4 distinct triangle faces.
+
+2. **Correct Types**: All subvertex results must be valid Formatics resolution types — not ⊥.
+
+3. **Geometric Consistency**:
+   - Triangles must share appropriate edges (connectivity)
+   - Subresults must be able to form a closed surface
+
+4. **Dimensional Fit**: The subresults must logically combine into a parent result of the correct dimension.
+
+---
+
+\textbf{Dimension-Specific Rules.}
+
+- **1D**:  
+  \( F(\texttt{ResolutionLine}, \texttt{ResolutionLine}) = \texttt{ResolutionLine} \)
+
+- **2D**:  
+  \( F(\texttt{TensionPoint}, \texttt{TensionPoint}) = \texttt{TensionPoint} \)
+
+- **3D (Triforce)**:  
+  \[
+  F(\Delta_1, \Delta_2, \Delta_3) = \texttt{Void}
+  \quad \text{iff} \quad \text{each } \Delta_i \text{ shares an edge with the others}
+  \]
+
+- **4D (Tetrahedron)**:  
+  \[
+  F(\Delta_{123}, \Delta_{124}, \Delta_{134}, \Delta_{234}) = \texttt{EnclosedVolume}
+  \quad \text{iff } \text{the triangles close into a tetrahedron}
+  \]
+
+- **n > 4 (Manifolds)**:  
+  \[
+  F([\Delta_1, \dots, \Delta_k]) = \texttt{ResolvedManifold}_n
+  \quad \text{iff } \text{the triangles form a topologically closed surface}
+  \]
+
+---
+
+\textbf{Failure Propagation.}  
+The function \( F \) is strict: any subvertex result of ⊥ forces total failure.
+
+\[
+\exists k:\ \texttt{Resolve}(\texttt{SubV}_k) = \bot \quad \Rightarrow \quad F(\dots) = \bot
+\]
+
+This rule ensures that Formatics resolution is only possible if all recursive components succeed and are geometrically compatible.
+
+---
+
+\textbf{Role in Recursive Resolution.}
+
+In recursive vertex evaluation (see B.4.1), \( F \) acts as the semantic constructor of the parent result:
+
+\[
+\texttt{Resolve}(V_n^{(0)}) = F(R_1, R_2, \dots, R_k)
+\]
+
+This design abstracts resolution logic away from raw direction sets and into resolved form composition — a higher-order proof aggregation step.
+
+---
+
+\textbf{Logical Interpretation.}
+
+\( F \) behaves like a multi-argument logical operator that asserts:
+
+- All subproofs must resolve (valid premises)
+- Their combination must support a coherent global conclusion
+- Only then does the parent proof succeed
+
+Thus, \( F \) generalizes logical conjunction, structural recursion, and spatial closure into a single typed function.
+
+---
+
+\textbf{Evaluation Trace Example.}
+```plaintext
+Input:
+  SubV₁ = Δ(v1, v2, v3)
+  SubV₂ = Δ(v1, v2, v4)
+  SubV₃ = Δ(v1, v3, v4)
+  SubV₄ = Δ(v2, v3, v4)
+
+Evaluation:
+  Resolve(SubV₁–₄) = [Δ₁, Δ₂, Δ₃, Δ₄]
+  F(Δ₁, Δ₂, Δ₃, Δ₄) = EnclosedVolume
+  ⇒ Resolve(V4) = EnclosedVolume
+````
+
+---
+
+\textbf{Summary.}
+The aggregation function $F$ defines the structural logic of recursive Formatics evaluation. It transforms a list of subvertex results into a single semantic result — or halts resolution entirely. Its conditions encode dimension-specific closure rules, geometric compatibility, and total dependency. Without $F$, recursive Formatics systems cannot resolve — it is the bridge between local proofs and global truth.
+
+Here is the `.txt`-formatted prose for **B.4.3 — Compositional Evaluation Chains**, formalizing how Formatics structures connect horizontally through directional flow. This section defines multi-stage inference chains built via valid `Compose` operations.
+
+---
+
+````
+\subsection*{B.4.3 — Compositional Evaluation Chains}
+
+While recursion allows Formatics to express nested semantic containment, composition provides the dual operation: chaining stabilized structures across resolution stages. Composition enables Formatics systems to grow horizontally — building inference flows, multi-node networks, and logical propagation chains through linked vertex spaces.
+
+The key operator is:
+
+\[
+\texttt{Compose}(V_A, V_B) = V_C
+\]
+
+This operation merges two vertex spaces when the output of one serves as an input to another. Resolution proceeds step-by-step, forming a directional chain of evaluative flow.
+
+---
+
+\textbf{Typed Signature Recap.}
+
+\[
+\texttt{Compose} : \texttt{VertexSpace}[n] \times \texttt{VertexSpace}[n] \to \texttt{VertexSpace}[n] \cup \texttt{InvalidComposition}
+\]
+
+Composition is valid only if:
+
+1. \( \texttt{Resolve}(V_A) = R_A \ne \bot \)
+2. \( R_A \in D_B \), the direction set of \( V_B \)
+3. \( \texttt{Resolve}(V_B) \ne \bot \)
+
+The result is a new composite vertex space \( V_C \) with a merged directional system and updated resolution trace.
+
+---
+
+\textbf{Logical Flow Interpretation.}
+
+Composition is interpreted as a form of implication:
+
+\[
+\texttt{Resolve}(V_A) = R_A \land R_A \in D_B \Rightarrow \texttt{Resolve}(V_B)
+\]
+
+This defines logical entailment through geometric dependency. A valid composition implies that one resolution \textit{enables} the next.
+
+---
+
+\textbf{Evaluation Pipeline.}
+
+Formatics supports chained compositions:
+
+\[
+V_1 \xrightarrow{\texttt{Compose}} V_2 \xrightarrow{\texttt{Compose}} V_3 \xrightarrow{\texttt{Compose}} \dots \xrightarrow{\texttt{Compose}} V_k
+\]
+
+Each link in the chain represents a directional dependency. The entire chain is only valid if every intermediate composition is successful.
+
+---
+
+\textbf{Associativity.}
+
+Composition in Formatics is associative:
+
+\[
+\texttt{Compose}(V_A, \texttt{Compose}(V_B, V_C)) = \texttt{Compose}(\texttt{Compose}(V_A, V_B), V_C)
+\]
+
+This permits the construction of resolution chains without needing to specify evaluation order — as long as the directional dependencies are satisfied.
+
+---
+
+\textbf{Identity Composition.}
+
+There exists an identity element \( V_I \) such that:
+
+\[
+\texttt{Compose}(V, V_I) = V \quad \text{and} \quad \texttt{Compose}(V_I, V) = V
+\]
+
+This identity vertex space must resolve to a semantic result already contained in the input/output of the paired vertex. It is useful for defining minimal or placeholder vertices in evaluation graphs.
+
+---
+
+\textbf{Chain Evaluation.}
+
+In a valid chain:
+
+\[
+\texttt{Resolve}(V_A) = R_A,\ R_A \in D_B \Rightarrow \texttt{Resolve}(V_B) = R_B
+\]
+
+Then:
+
+\[
+\texttt{Compose}(V_A, V_B) = V_{AB},\quad \texttt{Resolve}(V_{AB}) = R_B
+\]
+
+Resolution flows forward through composed vertices, preserving dependency and truth propagation.
+
+---
+
+\textbf{Trace Example.}
+```plaintext
+Step 1:
+  Resolve(V_A) = Void
+  Void ∈ D_B
+
+Step 2:
+  Resolve(V_B) = Void
+  Compose(V_A, V_B) = V_C
+
+Step 3:
+  Resolve(V_C) = Void
+````
+
+If any step fails (e.g., $\texttt{Resolve}(V_A) = \bot$), then the chain breaks.
+
+---
+
+\textbf{Compositional Depth.}
+
+Composition can be layered to arbitrary depth:
+
+$$
+V = \texttt{Compose}(V_1, \texttt{Compose}(V_2, \dots \texttt{Compose}(V_{n-1}, V_n)))
+$$
+
+This enables Formatics to encode resolution graphs, circuit structures, and semantic propagation trees — all with deterministic resolution flow.
+
+---
+
+\textbf{Summary.}
+
+Compositional evaluation in Formatics builds multi-stage inference chains. Vertex spaces link together through their semantic outputs, enabling directed resolution across a logical system. Each composition represents a geometric implication: a directional truth feeding forward into the next stage of structure. These chains are typed, associative, and failure-sensitive — giving Formatics a full model of horizontal logic propagation.
+
+
+Here is the `.txt`-formatted prose for **B.4.4 — Compositional Failure and Boundary Conditions**, detailing when and why Formatics recursive or compositional evaluation breaks down. This section ensures clear error modeling and enforces strict boundary rules for resolution logic.
+
+---
+
+````
+\subsection*{B.4.4 — Compositional Failure and Boundary Conditions}
+
+While Formatics resolution chains enable powerful recursive and compositional constructions, the system is rigorously bounded by its failure conditions. Any deviation from geometric, logical, or type integrity causes resolution to halt. These failure modes are not exceptions — they are integral to the Formatics logic system, defining the boundary between structured meaning and undefined behavior.
+
+Formatics supports two primary failure states:
+
+1. \( \bot \): \texttt{ResolutionFailure} — semantic breakdown due to unstabilized structure.
+2. \texttt{InvalidComposition} — type or dependency mismatch during composition.
+
+---
+
+\textbf{Failure Type 1: ResolutionFailure (⊥)}
+
+The symbol ⊥ marks a total failure to resolve a Formatics vertex space. It arises in any of the following cases:
+
+- \textbf{Empty Triangle Set:}  
+  \( \texttt{Stabilize}(D) = \emptyset \Rightarrow \texttt{Resolve}(V_n) = \bot \)
+
+- \textbf{Angle Deficit:}  
+  \( \sum \angle(\Delta_i) < \texttt{AngleClosure}(V_n) \Rightarrow \bot \)
+
+- \textbf{Degenerate Inputs:}  
+  Direction set is too small or all vectors are affinely dependent.
+
+- \textbf{Recursive Failure:}  
+  \( \exists i:\ \texttt{Resolve}(\texttt{SubV}_i) = \bot \Rightarrow \texttt{Resolve}(V_n) = \bot \)
+
+- \textbf{Aggregation Failure:}  
+  The function \( F \) receives incomplete or incompatible subresults.
+
+⊥ always propagates upward — any use of ⊥ as input to another Formatics function yields ⊥.
+
+\[
+f(\bot) = \bot \quad \forall f \in \{\texttt{Resolve},\ \texttt{Normalize},\ F, \dots\}
+\]
+
+---
+
+\textbf{Failure Type 2: InvalidComposition}
+
+This failure type arises only during calls to the \texttt{Compose} function. It indicates a structural or semantic mismatch between vertex spaces.
+
+Composition fails if:
+- \( \texttt{Resolve}(V_A) = \bot \)
+- \( \texttt{Resolve}(V_A) = R_A \), but \( R_A \notin D_B \)
+- \( \texttt{Resolve}(V_B) = \bot \)
+
+In this case:
+
+\[
+\texttt{Compose}(V_A, V_B) = \texttt{InvalidComposition}
+\]
+
+Unlike ⊥, this failure is \textit{not propagated}. It blocks the chain but does not poison unrelated vertices.
+
+---
+
+\textbf{Comparison of Failures.}
+| Failure Type         | Trigger                                    | Propagation     | Effect                      |
+|----------------------|--------------------------------------------|------------------|-----------------------------|
+| ⊥ (ResolutionFailure) | Insufficient angle, triangle set, or substructure | Yes              | Halts evaluation, poisons all dependent results |
+| InvalidComposition   | Dependency mismatch between vertex spaces | No               | Blocks specific composition only               |
+
+---
+
+\textbf{Boundary Conditions.}
+
+These failures define the semantic boundary of Formatics logic. Structures that do not stabilize geometrically, or do not connect via valid resolution outputs, are simply not meaningful. No exception handling or alternative semantics are allowed — Formatics enforces hard evaluation gates.
+
+In practical terms:
+- A vertex without valid closure has no truth value.
+- A composed structure without directional alignment has no logical consequence.
+
+---
+
+\textbf{Failure as Semantic Safeguard.}
+
+These conditions are not merely computational — they ensure semantic purity. Formatics only permits well-formed geometric logic to exist. Everything else is rejected, explicitly and deterministically.
+
+This design guarantees:
+- \textbf{Type safety}: no malformed results enter evaluation
+- \textbf{Structural integrity}: all stabilized structures are provable
+- \textbf{Semantic discipline}: all conclusions follow from valid inference paths
+
+---
+
+\textbf{Trace Example.}
+```plaintext
+Resolve(V_A) = Void
+Void ∉ D_B
+⇒ Compose(V_A, V_B) = InvalidComposition
+
+---
+
+Resolve(V_A) = ⊥
+⇒ Compose(V_A, V_B) = InvalidComposition
+⇒ Resolve(V_C) = ⊥ (if dependent)
+````
+
+---
+
+\textbf{Summary.}
+
+Compositional and recursive evaluation in Formatics is sharply bounded. Any breakdown in stabilization, closure, or directional dependency results in immediate and well-typed failure. These boundary conditions are not limitations — they are features that define the borders of Formatics truth. If a structure fails to resolve, it is not logically wrong — it is semantically undefined.
+
+Here is the `.txt`-formatted prose for **B.4.5 — Recursive Formatics as Typed Trees**, which formalizes Formatics recursive resolution systems as typed, bottom-up evaluable trees. This structural view unifies compositional, recursive, and evaluative logic in one model.
+
+---
+
+````
+\subsection*{B.4.5 — Recursive Formatics as Typed Trees}
+
+Recursive Formatics systems — built from nested vertex spaces and compositional chains — naturally form tree structures. Each vertex space can be treated as a node, and its subvertices or composed dependencies become child nodes. These trees are not symbolic parse trees, but typed resolution structures: each node resolves independently, and resolution flows upward or forward depending on structure.
+
+The entire Formatics evaluation process can thus be modeled as a typed tree, where each branch represents a resolution dependency and each node evaluates to a semantic result or ⊥.
+
+---
+
+\textbf{Tree Structure Definition.}
+
+Let the root be a Formatics vertex space:
+
+\[
+V_{\text{root}} = \mathcal{V}_n(D, r)
+\]
+
+Then define its evaluation tree \( T \) as:
+
+- **Nodes**: all vertex spaces (root, subvertices, and compositions)
+- **Edges**: directed connections from:
+  - subvertices to their parent (recursive)
+  - earlier compositions to later ones (compositional)
+
+The tree is defined recursively:
+
+- Base Case:  
+  If \( V \) contains no subvertices or compositions, it is a leaf.
+
+- Recursive Case:  
+  If \( V \) contains subvertices or composed inputs:
+  \[
+  \texttt{Children}(V) := \{V_1, V_2, \dots, V_k\}
+  \]
+
+Each child node must resolve before the parent can evaluate.
+
+---
+
+\textbf{Node Types.}
+
+Each node in the tree has a well-defined type:
+
+- \texttt{VertexSpace}[n] — for any Formatics vertex
+- Output: \( \texttt{SemanticResult}_n \cup \bot \)
+
+This makes the tree a \textit{typed semantic tree}. The type signature is preserved throughout traversal, allowing structural verification and recursive analysis.
+
+---
+
+\textbf{Evaluation Flow.}
+
+Evaluation proceeds bottom-up for recursive trees and left-to-right for compositional chains:
+
+- For recursive nodes:
+  - Evaluate all children (subvertices)
+  - Aggregate with \( F \)
+  - Resolve parent node
+- For composed nodes:
+  - Resolve left node
+  - Pass result forward
+  - Validate with \texttt{Compose}
+  - Resolve composed target
+
+Each resolution step is memoizable and locally typed.
+
+---
+
+\textbf{Failure Propagation.}
+
+Typed trees enforce Formatics boundary conditions (see B.4.4):
+
+- Any child node evaluating to ⊥ causes the parent to evaluate to ⊥
+- Invalid compositions block downstream resolution but do not contaminate unrelated branches
+- Failure is local and explicit
+
+This ensures that Formatics evaluation trees are safe from silent errors, non-determinism, or ambiguous state.
+
+---
+
+\textbf{Typed Signature per Node.}
+
+Each node \( V_i \in T \) satisfies:
+
+\[
+\Gamma \vdash \texttt{Resolve}(V_i) : \tau_i \quad \text{where} \quad \tau_i \in \{\texttt{SemanticResult}_n, \bot\}
+\]
+
+The environment \( \Gamma \) carries typing constraints from child nodes or composed dependencies.
+
+---
+
+\textbf{Visualization.}
+
+A tree for a recursive 4D vertex space might look like:
+
+```plaintext
+        V₄ (root)
+       /   |   |   \
+   Δ₁   Δ₂   Δ₃   Δ₄
+  /|\   /|\   /|\   /|\
+  ...   ...   ...   ...
+````
+
+Each triangle (Δ) is itself formed by resolving subvertices at lower depth, down to primitive direction sets.
+
+---
+
+\textbf{Use Cases.}
+
+Typed trees support:
+
+* Traceable evaluation
+* Proof expansion
+* Substructure verification
+* Recursive complexity control
+* Structural optimization
+
+They also allow Formatics to simulate or represent:
+
+* Abstract syntax trees (in geometric form)
+* Logic evaluation graphs
+* Functional programming trees (e.g., map-reduce structures)
+
+---
+
+\textbf{Summary.}
+
+Recursive Formatics systems are naturally modeled as typed trees. Each node is a vertex space, each child represents a dependent resolution, and each branch encodes a semantic dependency. Evaluation proceeds bottom-up or left-to-right, with failures propagating only through valid paths. This representation unifies Formatics logic, geometry, and type safety under a single evaluative structure.
+
+
+
+\subsection*{B.5.1 — Logic Gates as Stabilized Structures}
+
+Formatics provides a natural framework for modeling logic gates, not through symbolic expressions, but through geometric stabilization. In this model, directional vectors serve as input signals, stabilization acts as logical conjunction, and semantic resolution functions as the truth output of a gate.
+
+We treat logic gates as Formatics vertex spaces — typically in 2D — that either resolve (TRUE) or fail (FALSE) based on whether directional input conditions produce angular closure.
+
+---
+
+\textbf{Basic Setup.}  
+Let inputs \( A, B \in \texttt{Direction} \), with their inverses \( -A, -B \). Define the direction set:
+
+\[
+D = \{ A, B, -A, -B \}
+\]
+
+Let \( \mathcal{V}_2(D, r) \) be a 2D Formatics vertex space. The output of a gate corresponds to the semantic result of:
+
+\[
+\texttt{Resolve}(V_2(D, r))
+\]
+
+If the system stabilizes and produces a `TensionPoint`, the gate outputs \texttt{TRUE}. If it fails to stabilize, the result is ⊥, interpreted as \texttt{FALSE}.
+
+---
+
+\textbf{AND Gate.}  
+To model an AND gate, both inputs must be present. The directional set:
+
+\[
+D = \{ A, B, -A, -B \}
+\]
+
+yields:
+
+\[
+\texttt{Stabilize}(D) = [\Delta(A, B, 0),\ \Delta(-A, -B, 0)]
+\]
+
+Closure angle:
+
+\[
+\sum \angle = 2 \times 180^\circ = 360^\circ = \texttt{AngleClosure}(V_2)
+\]
+
+\[
+\Rightarrow \texttt{Resolve}(V_2) = \texttt{TensionPoint}
+\]
+
+This models a logical \texttt{TRUE}: the gate “fires” when both inputs are active.
+
+If either input is missing (e.g., \( D = \{ A, -A \} \)), stabilization yields an incomplete triangle set. Closure fails:
+
+\[
+\texttt{Resolve}(V_2) = \bot \quad \Rightarrow \texttt{FALSE}
+\]
+
+---
+
+\textbf{NOT Gate.}  
+To model negation geometrically, Formatics uses inverse vectors. A vector \( A \) and its negation \( -A \) cancel when used in combination:
+
+\[
+\texttt{Stabilize}(\{A, -A\}) = [\Delta(A, -A, 0)]
+\Rightarrow \texttt{AngleClosure} = 180^\circ
+\Rightarrow \texttt{Resolve}(V_1) = \texttt{ResolutionLine}
+\]
+
+This can be interpreted as a semantic "flattening" — directional inversion removes asymmetry and halts higher-dimensional stabilization.
+
+In a NOT gate, the presence of a direction actively prevents full closure. For instance:
+
+- Presence of \( A \), absence of \( -A \) ⇒ potential to resolve
+- Presence of both ⇒ neutralization ⇒ 1D closure (truth canceled)
+
+---
+
+\textbf{NAND Gate.}  
+To simulate NAND, Formatics uses a failure-triggered structure. If both inputs \( A, B \) are present, the system stabilizes:
+
+\[
+\texttt{Resolve}(V_2) = \texttt{TensionPoint} \Rightarrow \texttt{FALSE}
+\]
+
+If either input is missing, stabilization fails:
+
+\[
+\texttt{Resolve}(V_2) = \bot \Rightarrow \texttt{TRUE}
+\]
+
+Thus, NAND is modeled by interpreting failed resolution as semantic success. This is the inverse logic of AND, which requires full closure to produce \texttt{TRUE}.
+
+---
+
+\textbf{Truth Table Mapping.}
+
+| Inputs (A, B) | Direction Set \( D \)         | Result                   | Gate Output |
+|---------------|-------------------------------|--------------------------|-------------|
+| 0, 0          | —                             | ⊥                        | \texttt{FALSE} |
+| 1, 0          | \( \{ A, -A \} \)             | ⊥                        | \texttt{FALSE} |
+| 0, 1          | \( \{ B, -B \} \)             | ⊥                        | \texttt{FALSE} |
+| 1, 1          | \( \{ A, B, -A, -B \} \)      | TensionPoint            | \texttt{TRUE}  |
+
+(AND gate logic)
+
+---
+
+\textbf{Interpretation.}  
+This model transforms Formatics from a passive evaluator of geometry into a structural logic engine. Each gate is a test of directional sufficiency:
+
+- Do inputs align to form triangles?
+- Do triangles enclose the required angle?
+- If so: semantic result = \texttt{TRUE}
+- If not: evaluation = ⊥ = \texttt{FALSE}
+
+The result is an elegant reinterpretation of logic as resolution geometry. Gates no longer rely on circuits, voltage, or syntax — they stabilize in space.
+
+---
+
+\textbf{Summary.}  
+Formatics logic gates are stabilized structures. Each gate is a directional system that evaluates to \texttt{TRUE} only when its closure condition is satisfied. This turns Formatics into a logic engine driven by geometric sufficiency, not symbolic computation. Triangles, inverses, and angle sums become the components of a spatially realized Boolean algebra.
+
+\subsection*{B.5.2 — Field Interaction as Directional Voids}
+
+In quantum field theory and other physical models, interactions are represented as localized points where directional momentum or energy lines converge — often shown diagrammatically as “vertices.” Formatics offers a richer interpretation of these interactions: not as abstract junctions, but as 3D stabilized structures whose closure defines the presence of an interaction zone.
+
+The Formatics equivalent of a point-like interaction is the semantic result known as the \texttt{Void}, which emerges from the resolution of a 3D vertex space composed of three intersecting directional vectors.
+
+---
+
+\textbf{Directional Inputs.}  
+Consider three direction vectors:
+
+\[
+D = \{ \vec{v}_1, \vec{v}_2, \vec{v}_3 \}
+\]
+
+These may represent:
+- Momentum vectors of incoming/outgoing particles
+- Fields or energy carriers entering an interaction region
+
+Let \( \mathcal{V}_3(D, r) \) be the 3D vertex space containing them.
+
+---
+
+\textbf{Stabilization and Closure.}  
+Stabilization of \( D \) yields:
+
+\[
+\texttt{Stabilize}(D) =
+[\Delta(\vec{v}_1, \vec{v}_2, \vec{v}_3),
+ \Delta(\vec{v}_2, \vec{v}_3, \vec{v}_1),
+ \Delta(\vec{v}_3, \vec{v}_1, \vec{v}_2)]
+\]
+
+Each triangle contributes \( 180^\circ \), giving:
+
+\[
+\sum \angle = 540^\circ = \texttt{AngleClosure}(\mathcal{V}_3)
+\]
+
+\[
+\Rightarrow \texttt{Resolve}(\mathcal{V}_3) = \texttt{Void}
+\]
+
+---
+
+\textbf{Void as Semantic Interaction Region.}  
+The result is not just a numerical sum — it has meaning. The \texttt{Void} represents a semantic resolution form that implies:
+- The directions fully enclose a topological hole
+- All triangle faces form a closed surface
+- A localized 3D region of structural completion exists
+
+In Formatics terms, this is the **interaction site**. It is not a zero-dimensional vertex, but a directional enclosure — a semantic construct defined by stabilization.
+
+---
+
+\textbf{Field Theory Interpretation.}  
+This Formatics model aligns with how Feynman diagrams depict interactions:
+- Incoming lines = vectors
+- Vertex = convergence point
+- Output lines = resulting state
+
+Formatics refines this:
+- Triangles encode relationships among vectors
+- Angular closure enforces conservation-like geometric constraints
+- The semantic result (\texttt{Void}) is a stabilized structure, not just a symbolic point
+
+Thus:
+
+\[
+\texttt{Void}(\mathcal{V}_3) \equiv \text{Interaction Zone}
+\]
+
+---
+
+\textbf{Comparison with Theorem 4.1.}  
+This applied result matches the symbolic translation provided in Theorem 4.1:
+
+- Inputs: \( \vec{v}_1, \vec{v}_2, \vec{v}_3 \)
+- Stabilization: full triangle cycle
+- Closure: \( 3 \times 180^\circ = 540^\circ \)
+- Result: \texttt{Void}
+- Interpretation: field interaction localized in directional geometry
+
+This makes Formatics a candidate language for expressing not only logic and computation, but physical structure.
+
+---
+
+\textbf{Conservation Analogy.}  
+In physics, conservation laws (e.g., energy, momentum) must hold at an interaction point. In Formatics, the geometric analog is angle closure:
+
+\[
+\sum \angle(\Delta_i) = \texttt{AngleClosure}(\mathcal{V}_3)
+\]
+
+This closure is both a verification of relational completeness and a gatekeeper for semantic validity — if it fails, the interaction does not occur (⊥).
+
+---
+
+\textbf{Resolution as Interaction Determination.}  
+The presence or absence of interaction is determined not by assumptions, but by closure:
+
+- \texttt{Resolve}(V_3) = \texttt{Void} ⇒ Interaction confirmed
+- \texttt{Resolve}(V_3) = ⊥ ⇒ No semantic interaction
+
+This provides Formatics with a mechanism to model physical interaction as a logical-geometric condition.
+
+---
+
+\textbf{Summary.}  
+Field interactions in Formatics are not abstract points — they are resolved semantic structures. The \texttt{Void} emerges when a 3D directional system encloses a full cycle of triangles, representing a localized, topologically enclosed interaction zone. This reinterpretation of physical vertices as Formatics closures offers a geometric semantics for field theory and a new model for interpreting energy flow, particle interaction, and resolution logic.
+
+\subsection*{B.5.2.a — Symbolic Cross-Link: Theorem 4.1}
+
+To validate the Formatics interpretation of field interactions presented in B.5.2, we cross-reference the symbolic derivation provided in Appendix A — specifically, Theorem 4.1.
+
+That theorem establishes a symbolic sequence of inference steps, using Formatics grammar and axioms, to show how a set of three incoming direction vectors yields a \texttt{Void}, interpreted as a field interaction.
+
+---
+
+\textbf{Symbolic Recap (Theorem 4.1):}
+
+\textit{Step 1: Directional Inputs}
+\[
+D = \{ \vec{v}_1, \vec{v}_2, \vec{v}_3 \}
+\]
+
+\textit{Step 2: Vertex Space Construction}
+\[
+\mathcal{V}_3(D, r) = V_3(\{\vec{v}_1, \vec{v}_2, \vec{v}_3\}, r)
+\]
+
+\textit{Step 3: Triangle Formation}
+\[
+\text{Stabilize}(D) = 
+[\Delta(\vec{v}_1, \vec{v}_2, \vec{v}_3),\ 
+ \Delta(\vec{v}_2, \vec{v}_3, \vec{v}_1),\ 
+ \Delta(\vec{v}_3, \vec{v}_1, \vec{v}_2)]
+\]
+
+\textit{Step 4: Angular Closure Evaluation}
+\[
+\sum \angle(\Delta) = 3 \times 180^\circ = 540^\circ
+\]
+
+\textit{Step 5: Resolution}
+\[
+\texttt{AngleClosure}(\mathcal{V}_3) = 540^\circ \Rightarrow \texttt{Resolve}(\mathcal{V}_3) = \texttt{Void}
+\]
+
+\textit{Step 6: Interpretation}
+\[
+\texttt{Void}(\mathcal{V}_3) \equiv \text{field interaction region}
+\]
+
+---
+
+\textbf{Cross-Referential Mapping.}
+
+| Symbolic Component                   | Applied Interpretation (B.5.2)             |
+|-------------------------------------|--------------------------------------------|
+| \( D = \{\vec{v}_1, \vec{v}_2, \vec{v}_3\} \) | Input momenta or field directions          |
+| \( \texttt{Stabilize}(D) \)         | Interaction triangle structure             |
+| \( \sum \angle = 540^\circ \)       | Sufficient closure for interaction         |
+| \( \texttt{Resolve}(V_3) = \texttt{Void} \) | Interaction successfully occurs           |
+| \( \texttt{Void}(\mathcal{V}_3) \)  | Topologically enclosed event site          |
+
+This mapping validates that the applied reading of Formatics stabilization as physical interaction is not speculative — it is symbolically derived from the core grammar and theorems of Formatics.
+
+---
+
+\textbf{Semantic Elevation.}  
+Theorem 4.1 transitions Formatics from structure to meaning:
+
+- It begins with raw geometry
+- Applies rule-based stabilization (R1–R3)
+- Compares angular result to expectation (Axiom 4)
+- Elevates a triangle cycle into semantic structure (\texttt{Void})
+- Interprets that structure as a physical phenomenon
+
+This provides a formal trace that justifies all conclusions drawn in B.5.2.
+
+---
+
+\textbf{Summary.}  
+Theorem 4.1 is the symbolic foundation for the applied Formatics model of interaction. It demonstrates that triangle-based directional convergence leads not only to geometric closure but to a resolvable semantic form: the \texttt{Void}. This form, in turn, is mapped directly to a localized interaction site, confirming the physical applicability of Formatics stabilization.
+
+Here is the `.txt`-formatted prose for **B.5.3 — Recursive Computation Trees**, continuing Appendix B.5 by modeling computational recursion as nested Formatics vertex structures. This section aligns closely with Theorem 4.3 and the recursive evaluation framework defined in B.4.
+
+---
+
+````
+\subsection*{B.5.3 — Recursive Computation Trees}
+
+Formatics models recursion not by symbolic call stacks or functional expressions, but by geometric self-containment. A recursive computation is represented by a vertex space containing subvertices — smaller instances of itself — that must each resolve before the parent can stabilize. This structure matches both the semantics and mechanics of recursive function evaluation.
+
+Recursive Formatics structures naturally form computation trees, where:
+- Each node is a vertex space \( V_n \)
+- Each child node is a \texttt{SubV}_k
+- Each edge encodes a directional dependency or evaluation path
+
+---
+
+\textbf{Function Call as Vertex Construction.}  
+Let a recursive function \( f \) operate on a problem of size \( r_0 \), with each recursive call reducing the size by a constant factor \( s \), where \( 0 < s < 1 \). Formatics models this as:
+
+\[
+\mathcal{V}_n(D_0, r_0) \Rightarrow \{
+\texttt{SubV}_1(V_n(D_1, r_1)),\ 
+\texttt{SubV}_2(V_n(D_2, r_2)),\ 
+\dots \}
+\quad \text{where} \quad r_k = s^k \cdot r_0
+\]
+
+This mirrors the structure of recursive descent, with each subcall generating a subvertex, and each subvertex resolving independently.
+
+---
+
+\textbf{Evaluation as Tree Traversal.}  
+Evaluation proceeds from the bottom up:
+
+1. Resolve all subvertices:
+   \[
+   \texttt{Resolve}(\texttt{SubV}_k) = R_k
+   \]
+
+2. Aggregate results:
+   \[
+   F(R_1, \dots, R_m) = R_{\text{parent}}
+   \]
+
+3. Return:
+   \[
+   \texttt{Resolve}(V_n^{(0)}) = R_{\text{parent}}
+   \]
+
+This bottom-up stabilization mirrors post-order traversal of computation trees, common in functional evaluation.
+
+---
+
+\textbf{Typed Structure.}  
+Each node in the tree is typed:
+
+\[
+V_n(D_k, r_k) : \texttt{VertexSpace}[n]
+\quad \Rightarrow \quad
+\texttt{Resolve}(V_n(D_k, r_k)) : \texttt{SemanticResult}_n \cup \bot
+\]
+
+The structure is well-formed only if all subvertices are of matching type and dimension. Type violations or evaluation failures result in ⊥ at the parent level (see B.4.4).
+
+---
+
+\textbf{Link to Theorem 4.3.}  
+Theorem 4.3 in Appendix A formalizes this construction:
+
+- Root call = initial vertex
+- Each function call = directional edge
+- Each recursive step = smaller subvertex with radius \( r_k = s^k \cdot r_0 \)
+- Resolution propagates upward
+
+\[
+\forall k: \texttt{Resolve}(\texttt{SubV}_k) = \texttt{SemanticResult}_n
+\Rightarrow \texttt{Resolve}(V_n) = \texttt{SemanticResult}_n
+\]
+
+This proves that Formatics recursion preserves both structure and semantic closure at every depth.
+
+---
+
+\textbf{Example: Recursive Tetrahedral Evaluation.}
+```plaintext
+Input:
+  V4 with SubV₁–₄
+
+Step 1:
+  SubV₁ = Δ(v1, v2, v3)
+  SubV₂ = Δ(v1, v2, v4)
+  SubV₃ = Δ(v1, v3, v4)
+  SubV₄ = Δ(v2, v3, v4)
+
+Step 2:
+  Resolve each SubV = Triangle
+
+Step 3:
+  F(SubV₁, ..., SubV₄) = EnclosedVolume
+
+Final:
+  Resolve(V4) = EnclosedVolume
+````
+
+---
+
+\textbf{Interpretation: Computation as Resolution.}
+In Formatics, computation is the traversal of a resolution tree. The function does not return a value — it resolves into a semantic form. This matches the recursive structure of:
+
+* Syntax trees
+* Evaluation frames
+* Functional unfoldings
+
+but does so through directed stabilization rather than execution semantics.
+
+---
+
+\textbf{Termination Guarantee.}
+As shown in Theorem 3.3, recursive depth contracts geometrically:
+
+$$
+r_k = s^k \cdot r_0 \Rightarrow \lim_{k \to \infty} r_k = 0
+$$
+
+This guarantees termination in the absence of resolution failure and ensures that recursive Formatics structures are finite in scale and semantically convergent.
+
+---
+
+\textbf{Summary.}
+Recursive computation in Formatics is modeled through nested resolution. Each vertex space acts as a recursive frame, containing smaller versions of itself. Resolution flows from leaves to root, with stabilization acting as functional evaluation. This enables Formatics to represent recursive functions, syntax trees, and hierarchical data flows as spatial, typed computation graphs.
+
+```
+
+Here is the `.txt`-formatted prose for **B.5.4 — Neural Activation via Directional Convergence**, continuing Appendix B.5 by modeling threshold-based signal processing using Formatics stabilization. This section aligns with Theorem 4.6 and demonstrates how Formatics captures the logic of neural integration.
+
+---
+
+````
+\subsection*{B.5.4 — Neural Activation via Directional Convergence}
+
+Neurons in biological and artificial systems integrate multiple inputs before producing an output. This thresholded behavior — where activation occurs only when enough signals converge — aligns naturally with the Formatics stabilization model. In Formatics, a set of directional inputs must collectively stabilize to produce a semantic result. If the configuration lacks sufficient closure, no resolution occurs.
+
+This behavior makes Formatics a compelling model for representing signal integration and activation logic — not through electrical spikes or thresholds, but through geometric sufficiency and angular closure.
+
+---
+
+\textbf{Model Setup.}  
+Let each input to a neuron be a directional vector:
+
+\[
+D = \{ v_1, v_2, \dots, v_n \}
+\]
+
+Let the neuron be represented as a Formatics vertex space \( V_n(D, r) \). The neuron “activates” if the system stabilizes:
+
+\[
+\texttt{Resolve}(V_n(D, r)) = \texttt{SemanticResult}_n
+\]
+
+If stabilization fails, then:
+
+\[
+\texttt{Resolve}(V_n) = \bot
+\Rightarrow \text{No activation}
+\]
+
+---
+
+\textbf{Threshold Behavior via Triangle Count.}  
+According to Theorem 2.1:
+
+\[
+|\texttt{Stabilize}(D)| = \binom{|D|}{3}
+\]
+
+Each triangle contributes \( 180^\circ \) to the closure angle. Therefore:
+
+- A neuron requires a **minimum number of direction combinations** to stabilize
+- Partial input sets yield partial triangles — insufficient for resolution
+
+This models thresholded activation:
+- Below threshold → ⊥
+- At threshold → stabilization and semantic result
+
+---
+
+\textbf{Angle Closure as Activation Criterion.}  
+From Axiom 4:
+
+\[
+\texttt{AngleClosure}(V_n(D, r)) = 180^\circ \cdot \binom{|D|}{3}
+\]
+
+Only when this precise angle sum is met does the system resolve. This condition replaces numerical voltage thresholds with geometric logic: stabilization equals semantic activation.
+
+---
+
+\textbf{Theorem 4.6 Mapping.}  
+The symbolic version of this model is given by Theorem 4.6:
+
+- Direction set \( D = \{ v_1, \dots, v_n \} \), with \( n > 3 \)
+- Triangles must exist such that each \( v_i \) belongs to at least one \( \Delta \)
+- Full stabilization requires all relevant triangles
+- Activation ⇔ total angular closure
+
+This creates a Formatics analog of dendritic integration: each input contributes directionally, and only sufficient multi-input coherence yields activation.
+
+---
+
+\textbf{Example: Multi-Input Convergence.}
+```plaintext
+Input:
+  D = {v1, v2, v3, v4}
+
+Stabilize(D) yields:
+  Δ(v1, v2, v3), Δ(v1, v2, v4),
+  Δ(v1, v3, v4), Δ(v2, v3, v4)
+
+Total angle = 4 × 180° = 720°
+
+⇒ AngleClosure(V4) = 720°
+⇒ Resolve(V4) = EnclosedVolume
+````
+
+This resolution corresponds to a 4D “activation event” — a successful, full-input semantic firing.
+
+---
+
+\textbf{Failure Case: Subthreshold Input.}
+
+```plaintext
+Input:
+  D = {v1, v2, v3}
+
+Stabilize(D) = 3 triangles
+Angle = 540°
+ExpectedClosure(V4) = 720°
+⇒ Resolve = ⊥
+```
+
+This represents a failed activation — the system lacks sufficient relational input to stabilize.
+
+---
+
+\textbf{Interpretation: Input Integration as Geometry.}
+In Formatics:
+
+* Inputs are not scalar — they are spatial
+* Activation is not analog — it is geometric closure
+* Threshold is not a value — it is a sufficiency of triangulated relationships
+
+This allows Formatics to represent:
+
+* Signal integration
+* Nonlinear response
+* Relational sufficiency
+  using purely geometric rules.
+
+---
+
+\textbf{Summary.}
+Neural activation in Formatics is modeled by directional convergence and angular closure. A set of directional inputs resolves to a semantic result only when enough relational triangles are formed to meet the system’s dimensional closure requirement. This maps the logic of neurons — summation, threshold, and firing — into a geometric, typed, and deterministic resolution framework.
+
+
+Here is the `.txt`-formatted prose for **B.5.5 — Logic Flow Networks as Formatics Graphs**, continuing Appendix B.5 by scaling Formatics evaluation into full networked systems. This section builds on previous models of recursion and composition, now treating Formatics vertex spaces as nodes in a logic graph.
+
+---
+
+````
+\subsection*{B.5.5 — Logic Flow Networks as Formatics Graphs}
+
+Formatics resolution is not limited to isolated or recursive structures — it naturally extends to graphs of interacting vertex spaces. When Formatics vertices are linked through directional output-input relationships, they form logic flow networks. These networks behave like computational circuits, dependency graphs, or proof chains, except that their operation is governed not by symbolic substitution but by stabilization and semantic resolution.
+
+Each node in the network represents a typed vertex space. Edges represent the flow of semantic results — directional outputs from one node that are passed as directional inputs to another.
+
+---
+
+\textbf{Vertex Spaces as Nodes.}  
+Let each node \( V_i \) be a Formatics vertex space:
+
+\[
+V_i = \mathcal{V}_n(D_i, r_i)
+\]
+
+Its output is:
+
+\[
+\texttt{Resolve}(V_i) = R_i \in \texttt{SemanticResult}_n
+\]
+
+This result can serve as input to another vertex space \( V_j \) if:
+
+\[
+R_i \in D_j
+\Rightarrow \texttt{Compose}(V_i, V_j) = V_{ij}
+\]
+
+This defines the edge \( V_i \to V_j \) in the Formatics logic graph.
+
+---
+
+\textbf{Composition as Edge Formation.}  
+Edges are defined by successful `Compose` operations. The rules:
+
+1. \( \texttt{Resolve}(V_i) \ne \bot \)
+2. \( R_i \in D_j \)
+3. \( \texttt{Resolve}(V_j) \ne \bot \)
+
+together define a directed, typed edge from \( V_i \) to \( V_j \).
+
+\[
+E_{ij} := V_i \xrightarrow{R_i} V_j
+\]
+
+These are not symbolic transitions — they are geometric implications.
+
+---
+
+\textbf{Graph Evaluation Semantics.}  
+Evaluation proceeds as a resolution cascade:
+
+- Start from leaf nodes (nodes with no inbound edges)
+- Resolve each leaf: \( \texttt{Resolve}(V_k) = R_k \)
+- Propagate result downstream
+- Resolve composed vertices when all dependencies are satisfied
+
+The full graph stabilizes if and only if all nodes resolve and all edges represent valid directional handoffs.
+
+---
+
+\textbf{Failure Conditions in Graphs.}  
+Failure in a node propagates forward:
+
+- If \( \texttt{Resolve}(V_i) = \bot \), any dependent node \( V_j \) cannot receive a valid input
+- This causes:
+  \[
+  \texttt{Compose}(V_i, V_j) = \texttt{InvalidComposition}
+  \Rightarrow \texttt{Resolve}(V_j) = \bot
+  \]
+
+This defines a semantic failure cascade — a breakdown in one vertex invalidates the entire dependent subgraph.
+
+---
+
+\textbf{Formatics vs Traditional Logic Graphs.}  
+In symbolic logic or digital circuits:
+- Nodes are gates or operators
+- Edges transmit bits or symbolic values
+
+In Formatics:
+- Nodes are directional resolution environments
+- Edges transmit typed geometric results
+
+The graph does not simply evaluate — it stabilizes.
+
+---
+
+\textbf{Example: Stabilized Dependency Chain.}
+```plaintext
+V_A = V3({v1, v2, v3}) ⇒ Resolve = Void
+V_B = V3({Void, v4, v5}) ⇒ Resolve = Void
+V_C = V3({Void, v6, v7}) ⇒ Resolve = Void
+
+Graph:
+  V_A → V_B → V_C
+
+Each vertex stabilizes and feeds its result forward.
+````
+
+---
+
+\textbf{Topological Guarantees.}
+If the graph is:
+
+* Acyclic
+* All inputs are provided
+* All direction sets satisfy closure conditions
+
+Then the Formatics graph resolves deterministically. The output is a network-wide semantic state where each vertex has resolved into its type-specific truth.
+
+---
+
+\textbf{Applications.}
+This model supports:
+
+* Circuit logic modeling
+* Proof networks
+* Signal flow graphs
+* Computation graphs (e.g., in neural nets or dataflows)
+* Causal inference systems
+
+All while retaining full spatial grounding and typed resolution semantics.
+
+---
+
+\textbf{Summary.}
+Logic flow networks in Formatics are graphs of vertex spaces connected by directional implication. Resolution cascades from leaves to roots as semantic results are passed forward through valid compositions. These graphs encode computation, inference, and structure — not through symbolic manipulation, but through geometric stabilization and angular truth propagation.
+
+
+Here is the `.txt`-formatted prose for **B.5.6 — Topological Logic and Manifold Truth**, the final core section of Appendix B.5. This section expands Formatics logic beyond local vertex spaces into surface-level or global closure — modeling logical truth across topological forms.
+
+---
+
+````
+\subsection*{B.5.6 — Topological Logic and Manifold Truth}
+
+Formatics logic does not require a vertex space to be interpreted in isolation. Instead, Formatics structures — particularly in higher dimensions — can be assembled into continuous surfaces or volumes whose closure properties encode truth. In these systems, semantic resolution is not local but topological: truth is the successful stabilization of a manifold constructed from many triangles.
+
+This enables Formatics to express logic not only through discrete vertex evaluation, but through the geometric behavior of extended structures. The result is a framework for topological logic — a system where closure, connectedness, and enclosure define semantic validity.
+
+---
+
+\textbf{From Vertex to Surface.}  
+In previous sections, Formatics resolution was defined per vertex space:
+
+\[
+\texttt{Resolve}(V_n(D, r)) = \texttt{SemanticResult}_n
+\]
+
+Now, we generalize:
+
+- Let \( M \) be a collection of Formatics triangles \( \{ \Delta_i \} \)
+- Let \( M \) be embedded in \( \mathbb{R}^n \)
+- Let \( M \) be closed (i.e., every edge appears in exactly two triangles)
+
+Then \( M \) forms a Formatics manifold, and the truth of \( M \) is defined by:
+
+\[
+\sum_{\Delta \in M} \angle(\Delta) = \texttt{AngleClosure}(M)
+\Rightarrow \texttt{Resolve}(M) = \texttt{ResolvedManifold}_n
+\]
+
+---
+
+\textbf{Manifold Resolution.}  
+In this model, each triangle is a local stabilizing clause. The entire surface or volume resolves only when the global closure condition is satisfied:
+
+- All local triangle angle contributions must align
+- All edges must be shared (no open boundaries)
+- The total angular sum must match dimensional expectations
+
+This mirrors global semantic satisfaction in logical systems: the “truth” of a formula depends on satisfaction across all of its components.
+
+---
+
+\textbf{Theorem 4.5 Alignment.}  
+Theorem 4.5 defines the conditions for topological continuity:
+
+- All triangles \( \Delta_i \) must be edge-adjacent
+- The union \( \bigcup \Delta_i \) must be fully enclosed
+- This implies the structure is \texttt{Continuous}
+- In Formatics terms, this enables a manifold-level resolution
+
+Hence:
+
+\[
+\texttt{Stabilize}(D) = [\Delta_1, \dots, \Delta_k] \quad \text{and}
+\quad \texttt{Closure}(M) \Rightarrow \texttt{ResolvedManifold}_n
+\]
+
+---
+
+\textbf{Topological Truth.}  
+Truth in this context is not Boolean — it is geometric closure across a topological space. This means Formatics can express:
+
+- Spatially distributed truth
+- Nonlocal dependency
+- Boundary-sensitive logic
+
+For example, a hole in the manifold (missing triangle) invalidates the global resolution — just as a missing clause can invalidate a proof.
+
+---
+
+\textbf{Example: 2D Surface Closure.}
+```plaintext
+Input:
+  M = [Δ₁, Δ₂, ..., Δ₆]
+  Each Δ shares an edge with its neighbor
+  All edges matched (manifold is closed)
+
+Result:
+  ∑ angles = 6 × 180° = 1080°
+  Expected closure = 1080°
+  ⇒ Resolve(M) = ResolvedManifold₂
+````
+
+If one triangle is missing or malformed, total angle sum fails, and:
+
+$$
+\texttt{Resolve}(M) = \bot
+\Rightarrow \texttt{FALSE}
+$$
+
+---
+
+\textbf{Semantic Implications.}
+Topological Formatics resolution generalizes all earlier forms:
+
+* 1D → Line
+* 2D → TensionPoint or closed polygon
+* 3D → Void (enclosed triangular shell)
+* 4D → EnclosedVolume (tetrahedral surface)
+* nD → ResolvedManifold (triangulated boundary surface)
+
+Thus, Formatics truth becomes scale-independent: any sufficiently enclosed structure — regardless of size — evaluates semantically through stabilization.
+
+---
+
+\textbf{Applications.}
+
+* **Homology modeling**: surface holes correspond to failed closure
+* **Proof fields**: distributed proof structures over geometries
+* **Topology verification**: stable manifolds as validated logical environments
+* **Semantic encoding**: resolution across a surface encodes system-wide consistency
+
+---
+
+\textbf{Summary.}
+Formatics enables a form of topological logic: systems where semantic resolution depends on the stabilization of extended geometric structures. Manifold-level truth is defined by edge adjacency, global triangle coverage, and angular closure. This expands Formatics beyond isolated vertices — allowing it to represent logic on surfaces, across boundaries, and throughout space itself.
+
+```
+

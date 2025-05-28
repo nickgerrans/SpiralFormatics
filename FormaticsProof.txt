@@ -1,0 +1,2239 @@
+#Lexical Elements
+
+<Identifier> ::= "v" <Integer>             ; directional vector (v1, v2, ...)
+<Negation>   ::= "-" <Identifier>          ; inverse vector
+<Radius>     ::= "r" <Integer>             ; radius value (e.g., r0, r1)
+<Angle>      ::= <Integer> "°"             ; angle measures
+<Dimension>  ::= "V" <Integer>             ; vertex space of dimension n
+
+#Primitive Terms 
+
+<Vector>     ::= <Identifier> | <Negation>
+<VectorSet>  ::= "{" <VectorList> "}"
+<VectorList> ::= <Vector> | <Vector> "," <VectorList>
+
+<Triangle>   ::= "Δ" "(" <Vector> "," <Vector> "," <Vector> ")"
+<VertexSpace> ::= "V" <Integer> "(" <VectorSet> "," <Radius> ")"
+
+#Operators and Constructs
+
+<Combine>    ::= <Vector> "+" <Vector>          ; vector composition
+<Structure>  ::= <Combine> "→" <Shape>
+<Shape>      ::= "Line" | "Hourglass" | "Triforce" | "Tetrahedron"
+
+<AngleSum>   ::= "∑" <TriangleSet> "." "angle" "=" <Angle>
+<TriangleSet> ::= "[" <TriangleList> "]"
+<TriangleList> ::= <Triangle> | <Triangle> "," <TriangleList>
+
+<VoidExpr>   ::= "Void(" <VertexSpace> ")"
+
+<Stabilization> ::= "Stabilize(" <VectorSet> ")" "=" <TriangleSet>
+<AngleClosure> ::= "AngleClosure(" <VertexSpace> ")" "=" <Angle>
+
+#Inference and Transformations 
+
+<Inference>  ::= <Premise> "⊢" <Conclusion>
+<Premise>    ::= <Expression>
+<Conclusion> ::= <Expression>
+<Expression> ::= <Structure> 
+               | <AngleSum> 
+               | <AngleClosure> 
+               | <Stabilization> 
+               | <VoidExpr>
+
+<Rewrite>    ::= <Expression> "⇒" <Expression>
+
+#Recursive Forms
+
+<SubVertex> ::= "SubV" <Integer> "(" <VertexSpace> "," "depth" <Integer> ")"
+<RecursiveRule> ::= <VertexSpace> "⇒" <SubVertexList>
+<SubVertexList> ::= <SubVertex> | <SubVertex> "," <SubVertexList>
+
+
+##Example Encoded Statements
+
+#Directional Inversion
+
+v1 ⊢ -v1
+
+#Triangle Formation
+
+{v1, v2, v3} ⊢ Δ(v1, v2, v3)
+
+#Triforce Closure 
+
+[Δ(v1, v2, v3), Δ(v2, v3, v1), Δ(v3, v1, v2)].angle = 540°
+
+#Angular Closure for V5(5D)
+
+AngleClosure(V5({v1, v2, v3, v4, v5}, r0)) = 1800°
+
+#Rewrite Rule
+
+v1 + -v1 ⇒ Line
+v1 + v2 + v3 ⇒ Triforce
+
+#Recursive Generation
+
+V4({v1, v2, v3, v4}, r0) ⇒ SubV1(V4({v1', v2', v3', v4'}, r0/2), depth 1)
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Formatics Appendix A: Axioms and Theorems  %
+% Symbolic and LaTeX-Formatted Reference     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Appendix A: Formatics Axioms and Theorems (Symbolic Form)}
+
+\subsection*{A.1 Formatics Axioms (Symbolic)}
+
+\textbf{Axiom 1 — Bounded Resolution}
+\[
+\vec{v}_1 \in \mathbb{R}^n \quad \vdash \quad \mathcal{V}_n(\{\vec{v}_1\}, r) \iff r < \infty
+\]
+
+\textbf{Axiom 2 — Directional Inversion}
+\[
+\vec{v}_1 \vdash -\vec{v}_1
+\]
+
+\textbf{Axiom 3 — Triangulation Requirement}
+\[
+\{\vec{v}_i, \vec{v}_j, \vec{v}_k\} \vdash \Delta(\vec{v}_i, \vec{v}_j, \vec{v}_k)
+\]
+\[
+\text{Stabilize}(\{\vec{v}_1, \dots, \vec{v}_n\}) = \left[\Delta(i,j,k) \mid i < j < k \right]
+\]
+
+\textbf{Axiom 4 — Angular Closure}
+\[
+\text{AngleClosure}(\mathcal{V}_n(D, r)) =
+\begin{cases}
+180^\circ & \text{if } |D| = 1 \\
+360^\circ & \text{if } |D| = 2 \\
+180^\circ \cdot \binom{|D|}{3} & \text{if } |D| \geq 3
+\end{cases}
+\]
+
+\textbf{Axiom 5 — Void Formation}
+\[
+\text{AngleClosure}(\mathcal{V}_n) = \sum \angle(\Delta_{ijk}) \quad \vdash \quad \text{Void}(\mathcal{V}_n)
+\]
+
+\textbf{Axiom 6 — Recursive Stability}
+\[
+\mathcal{V}_n(D, r) \Rightarrow \{ \text{SubV}_i(\mathcal{V}_n(D'_i, r/2), \text{depth } 1) \}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{A.2 Formatics Theorems (Symbolic)}
+
+\textbf{Theorem 0.1 — Direction Requires Bounded Space}
+\[
+\vec{v}_1 \in \mathbb{R}^n \quad \vdash \quad \neg\text{Stabilize}(\{\vec{v}_1\}) \quad \text{unless} \quad \exists r < \infty: \mathcal{V}_n(\{\vec{v}_1\}, r)
+\]
+
+\textbf{Theorem 0.2 — Direction Requires Inverse}
+\[
+\vec{v}_1 \vdash -\vec{v}_1
+\]
+
+\textbf{Theorem 1.1 — 1D Formatics Vertex (Diameter)}
+\[
+\text{Stabilize}(\{\vec{v}, -\vec{v}\}) \Rightarrow \text{Line}
+\]
+\[
+\text{AngleClosure}(\mathcal{V}_1(\{\vec{v}, -\vec{v}\}, r)) = 180^\circ
+\]
+
+\textbf{Theorem 1.2 — 2D Formatics Vertex (Hourglass)}
+\[
+\text{Stabilize}(\{\vec{v}_1, \vec{v}_2, -\vec{v}_1, -\vec{v}_2\}) \Rightarrow [\Delta(\vec{v}_1, \vec{v}_2, 0), \Delta(-\vec{v}_1, -\vec{v}_2, 0)]
+\]
+\[
+\text{AngleClosure}(\mathcal{V}_2) = 360^\circ
+\]
+
+\textbf{Theorem 1.3 — 3D Formatics Vertex (Triforce)}
+\[
+\text{Stabilize}(\{\vec{v}_1, \vec{v}_2, \vec{v}_3\}) \Rightarrow [\Delta_{123}, \Delta_{231}, \Delta_{312}]
+\]
+\[
+\text{AngleClosure}(\mathcal{V}_3) = 540^\circ
+\quad \Rightarrow \quad \text{Void}(\mathcal{V}_3)
+\]
+
+\textbf{Theorem 1.4 — 4D Formatics Vertex (Tetrahedron)}
+\[
+\text{Stabilize}(\{\vec{v}_1, \vec{v}_2, \vec{v}_3, \vec{v}_4\}) \Rightarrow
+[\Delta_{123}, \Delta_{124}, \Delta_{134}, \Delta_{234}]
+\]
+\[
+\text{AngleClosure}(\mathcal{V}_4) = 720^\circ
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{A.3 General Structure Theorems (Symbolic)}
+
+\textbf{Theorem 2.1 — Triangle Count}
+\[
+|\text{Stabilize}(D)| = \binom{|D|}{3}
+\]
+
+\textbf{Theorem 2.2 — Angular Closure}
+\[
+\text{AngleClosure}(\mathcal{V}_n) =
+\begin{cases}
+180^\circ & \text{if } |D| = 1 \\
+360^\circ & \text{if } |D| = 2 \\
+180^\circ \cdot \binom{|D|}{3} & \text{if } |D| \geq 3
+\end{cases}
+\]
+
+\textbf{Theorem 2.3 — Closure Requires Triangulation}
+\[
+|\text{Stabilize}(D)| = \binom{|D|}{3} \quad \vdash \quad \text{Closed}(\mathcal{V}_n)
+\]
+\[
+\neg\text{Stabilize}(D) \Rightarrow \neg\text{Closed}(\mathcal{V}_n)
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Appendix A.4 — Recursive Formatics Theorems %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{A.4 Recursive Formatics (Symbolic Axioms and Theorems)}
+
+\textbf{Axiom 7 — Bounded Container Required for Stabilization}
+
+\textit{Explanation: Formatics resolution requires a finite container to stabilize direction. In 2D and 3D this is a circle or sphere, respectively. For higher-dimensional generalization, this becomes a minimal symmetric convex hull enclosing all direction vectors.}
+
+\[
+\neg\text{Bounded}(\vec{v}_i) \Rightarrow \neg\text{Stabilize}(\{\vec{v}_i\})
+\]
+\[
+\text{Container}(r) \in \{\text{Circle}, \text{Sphere}, \text{Hull}_n\} \quad \Rightarrow \quad \mathcal{V}_n(\{\vec{v}_i\}, r)
+\]
+
+---
+
+\textbf{Theorem 3.1 — Recursive Containment of Vertex Spaces}
+\[
+\mathcal{V}_n(D, r) \Rightarrow \text{SubV}_1(\mathcal{V}_n(D', r/2), \text{depth } 1)
+\]
+\[
+\text{where } D' \subseteq \text{TriangleCenters}(\text{Stabilize}(D))
+\]
+\textit{Explanation: Triangles within a Formatics vertex space define new centers of resolution, enabling self-contained recursion.}
+
+---
+
+\textbf{Theorem 3.2 — Fractal Self-Similarity of Recursive Vertices}
+\[
+\forall k: \text{SubV}_k(\mathcal{V}_n(D', r_k)) \equiv \mathcal{V}_n(D, r)
+\]
+\textit{Explanation: Recursive Formatics vertices inherit all structural rules from their parent vertex space, scaled in size but not in logic.}
+
+---
+
+\textbf{Theorem 3.3 — Geometric Convergence of Recursive Radius}
+\[
+r_k = s^k \cdot r_0, \quad 0 < s < 1 \quad \Rightarrow \quad \lim_{k \to \infty} r_k = 0
+\]
+\textit{Explanation: Each nested vertex space reduces in radius geometrically, but retains closure until vanishing scale.}
+
+---
+
+\textbf{Theorem 3.4 — Stability of Infinite Recursive Formatics Systems}
+\[
+\forall k:\ \text{AngleClosure}(\text{SubV}_k(\mathcal{V}_n)) = \text{AngleClosure}(\mathcal{V}_n)
+\quad \Rightarrow \quad \text{Stable}(\text{SubV}_k)
+\]
+\textit{Explanation: Recursive nesting never breaks Formatics structure. Angular stability is preserved at all levels of resolution.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Appendix A.5 — Applied Formatics: Physics, Logic, Computation %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{A.5 Applied Formatics Theorems (Symbolic Translation)}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 4.1 — Feynman Vertices as Triforce Structures}
+
+\textit{Context: Quantum field theory diagrams typically contain a vertex where 3 particle lines intersect, shown as a point. Formatics reinterprets this as a 3D Formatics vertex with internal structure.}
+
+\textbf{Step 1: Directional Inputs}
+\[
+D = \{\vec{v}_1, \vec{v}_2, \vec{v}_3\}
+\quad \text{(momentum vectors of particles)}
+\]
+
+\textbf{Step 2: Vertex Space Construction}
+\[
+\mathcal{V}_3(D, r) = V3(\{\vec{v}_1, \vec{v}_2, \vec{v}_3\}, r)
+\]
+
+\textbf{Step 3: Triangulation of Direction Set}
+\[
+\text{Stabilize}(D) =
+[\Delta(\vec{v}_1, \vec{v}_2, \vec{v}_3),
+ \Delta(\vec{v}_2, \vec{v}_3, \vec{v}_1),
+ \Delta(\vec{v}_3, \vec{v}_1, \vec{v}_2)]
+\]
+
+\textbf{Step 4: Angular Closure Evaluation}
+\[
+\text{AngleClosure}(V3) = 3 \times 180^\circ = 540^\circ
+\]
+
+\textbf{Step 5: Void Emergence}
+\[
+\sum \angle(\Delta) = 540^\circ \Rightarrow \text{Void}(V3)
+\]
+
+\textbf{Step 6: Interpretation}
+\[
+\text{Void}(\mathcal{V}_3) \equiv \text{field interaction region (semantic result)}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 4.2 — Logic Gates as 2D Formatics Structures}
+
+\textit{Context: Logic gates operate conditionally on binary inputs. Formatics reinterprets a gate as a stabilized vertex space: closure only occurs when inputs satisfy the structure.}
+
+\textbf{Step 1: Directional Inputs}
+\[
+\vec{v}_1 = \text{input A} \quad \vec{v}_2 = \text{input B}
+\quad D = \{\vec{v}_1, \vec{v}_2, -\vec{v}_1, -\vec{v}_2\}
+\]
+
+\textbf{Step 2: Vertex Space Construction}
+\[
+\mathcal{V}_2(D, r) = V2(D, r)
+\]
+
+\textbf{Step 3: Triangles Formed}
+\[
+\text{Stabilize}(D) = [\Delta(\vec{v}_1, \vec{v}_2, 0), \Delta(-\vec{v}_1, -\vec{v}_2, 0)]
+\]
+
+\textbf{Step 4: Angular Closure}
+\[
+\text{AngleClosure}(V2) = 2 \times 180^\circ = 360^\circ
+\]
+
+\textbf{Step 5: Closure Condition (Logical Behavior)}
+\[
+\text{¬(v}_1 \land \vec{v}_2) \Rightarrow \neg\text{Closure}
+\quad \text{(AND gate fails to stabilize)}
+\]
+\[
+\vec{v}_1 \land \vec{v}_2 \Rightarrow \text{Stabilize}(V2) \Rightarrow \text{Output}
+\]
+
+\textbf{Step 6: Output Interpretation}
+\[
+\text{Stabilized}(\mathcal{V}_2) \Rightarrow \text{Output Vector}
+\quad (\text{semantic flow of TRUE})
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 4.3 — Recursive Computation as Vertex Tree}
+
+\textit{Context: Recursive functions generate trees of evaluation. Formatics models this as nested vertex spaces, each obeying the same closure rules.}
+
+\textbf{Step 1: Root Call (Initial Vertex)}
+\[
+\mathcal{V}_n(D_0, r_0) = Vn(\{\vec{v}_1, \dots, \vec{v}_n\}, r_0)
+\]
+
+\textbf{Step 2: Recursive Subvertex Generation}
+\[
+\forall k: r_k = s^k \cdot r_0
+\quad \text{and} \quad \text{SubV}_k(Vn(D_k, r_k)) \equiv Vn
+\]
+
+\textbf{Step 3: Branches as Directional Paths}
+\[
+\text{Each call } f_i \Rightarrow \vec{v}_i
+\quad \Rightarrow \text{edge in recursive geometry}
+\]
+
+\textbf{Step 4: Recursive Stability}
+\[
+\forall k: \text{AngleClosure}(\text{SubV}_k) = \text{AngleClosure}(Vn)
+\Rightarrow \text{Stable}
+\]
+
+\textbf{Step 5: Interpretation}
+\[
+\text{Computation} = \text{Traversal of stabilized Formatics structure}
+\]
+
+\textit{Recursion is a geometric unfolding of directional stabilization.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Appendix A.5 (continued) — Applied Formatics Theorems %
+% Symbolic Translations: Theorems 4.4 – 4.10           %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{A.5 Applied Formatics (continued)}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 4.4 — Algebraic Symmetry via Inversion}
+
+\textit{Explanation: For every Formatics vertex space, the inverse directional set forms an equivalent structure.}
+
+\textbf{Step 1: Directional Inversion}
+\[
+D = \{v_1, \dots, v_n\}, \quad D' = \{-v_1, \dots, -v_n\}
+\]
+
+\textbf{Step 2: Equivalence of Stabilization}
+\[
+\text{Stabilize}(D) \equiv \text{Stabilize}(D')
+\]
+
+\textbf{Step 3: Angle Closure Equivalence}
+\[
+\text{AngleClosure}(Vn(D, r)) = \text{AngleClosure}(Vn(D', r))
+\]
+
+\textbf{Step 4: Structural Equivalence}
+\[
+Vn(D, r) \equiv Vn(D', r)
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 4.5 — Topological Continuity by Triangle Adjacency}
+
+\textit{Explanation: If all triangles are edge-connected and enclosed, the structure is topologically continuous.}
+
+\textbf{Step 1: Full Triangulation}
+\[
+\text{Stabilize}(D) = [\Delta_1, \dots, \Delta_k], \quad k = C(|D|, 3)
+\]
+
+\textbf{Step 2: Adjacency Condition}
+\[
+\forall \Delta_i, \exists \Delta_j : \text{Edge}(\Delta_i) \cap \text{Edge}(\Delta_j) \ne \emptyset
+\]
+
+\textbf{Step 3: Continuity Result}
+\[
+\bigcup \Delta_i \subseteq Vn(D, r) \Rightarrow \text{Continuous}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 4.6 — Neural-Analog Multi-Input Resolution}
+
+\textit{Explanation: Inputs above a structural threshold resolve the space; this mimics neuronal integration.}
+
+\textbf{Step 1: Input Set}
+\[
+D = \{v_1, \dots, v_n\}, \quad n > 3
+\]
+
+\textbf{Step 2: Triangle Memberships}
+\[
+\forall v_i, \exists \{\Delta_1, \dots\} \ni v_i
+\]
+
+\textbf{Step 3: Stabilization Requires Multiple Triangles}
+\[
+\text{Stabilize}(D) \Rightarrow \text{Closure only if } \sum \angle = \text{AngleClosure}(Vn)
+\]
+
+\textbf{Step 4: Threshold Output Condition}
+\[
+\neg\text{Stabilize} \Rightarrow \neg\text{Output}
+\quad
+\text{Stabilize} \Rightarrow \text{Output}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 4.7 — Loop Structures as Vertex Cycles}
+
+\textit{Explanation: A directional loop across Formatics vertices defines a feedback system.}
+
+\textbf{Step 1: Vertex Chain}
+\[
+\{Vn^{(1)}, Vn^{(2)}, \dots, Vn^{(k)}\}
+\]
+
+\textbf{Step 2: Directional Feed}
+\[
+\vec{v}_i^{(m)} \in D^{(m+1)}, \quad \vec{v}^{(k)} \in D^{(1)}
+\]
+
+\textbf{Step 3: Loop Condition}
+\[
+Vn^{(1)} \rightarrow \dots \rightarrow Vn^{(k)} \rightarrow Vn^{(1)}
+\]
+
+\textbf{Step 4: Resolution Condition}
+\[
+\text{AngleClosure}(Vn^{(m)}) \text{ holds for all } m
+\Rightarrow \text{Stabilized Loop}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 4.8 — Dual Resolution in a Shared Vertex Space}
+
+\textit{Explanation: Opposing direction sets form two mirrored resolution paths in the same bounded container.}
+
+\textbf{Step 1: Directional Pairs}
+\[
+D = \{v_1, v_2, v_3\}, \quad D' = \{-v_1, -v_2, -v_3\}
+\]
+
+\textbf{Step 2: Combined Vertex Space}
+\[
+\text{Stabilize}(D \cup D') = [\Delta_1, \dots, \Delta_6]
+\]
+
+\textbf{Step 3: Dual Structure Condition}
+\[
+Vn(D \cup D') \Rightarrow \text{Dual Vertex}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 4.9 — Entanglement-Like Coupling via Shared Triangle}
+
+\textit{Explanation: If two vertex spaces share a triangle, their internal structure is semantically linked.}
+
+\textbf{Step 1: Shared Stabilization}
+\[
+\mathcal{V}_n^{(A)} \cap \mathcal{V}_n^{(B)} = \{\Delta(v_i, v_j, v_k)\}
+\]
+
+\textbf{Step 2: Angular Dependency}
+\[
+\Delta \in \text{Stabilize}(D^{(A)}) \cap \text{Stabilize}(D^{(B)})
+\Rightarrow \text{Interdependence}
+\]
+
+\textbf{Step 3: Interpretation}
+\[
+\text{Change in } D^{(A)} \Rightarrow \text{Affects closure of } \mathcal{V}_n^{(B)}
+\Rightarrow \text{Coupled Stability}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 4.10 — Graphs as Formatics Vertex Networks}
+
+\textit{Explanation: A graph of nodes and edges maps to Formatics vertices and directional links.}
+
+\textbf{Step 1: Graph Input}
+\[
+G = (V, E), \quad v_i \in V, \quad e_{ij} \in E
+\]
+
+\textbf{Step 2: Node and Edge Mapping}
+\[
+v_i \Rightarrow Vn^{(i)}, \quad e_{ij} \Rightarrow \vec{v}_{ij}
+\]
+
+\textbf{Step 3: Full Structure}
+\[
+\forall v_i: \text{Stabilize}(D_i) \text{ and } \text{AngleClosure}(Vn^{(i)}) = \text{true}
+\Rightarrow \text{Stabilized Formatics Graph}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Appendix A.5 (final additions) — Applied Formatics Theorems
+% Symbolic Translations: Theorems 4.11 – 4.14
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{A.5 Applied Formatics (continued)}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 4.11 — Syntax Trees as Nested Vertex Structures}
+
+\textit{Explanation: Hierarchical syntax structures correspond to recursive Formatics vertex nesting.}
+
+\textbf{Step 1: Syntax Tree Representation}
+\[
+T = \text{Tree of expressions} \quad \Rightarrow \quad \{Vn^{(i)}\}
+\]
+
+\textbf{Step 2: Node Encoding}
+\[
+\text{Each node } N_i \Rightarrow Vn^{(i)}(D_i, r)
+\quad \text{where } D_i = \{\text{child inputs}\}
+\]
+
+\textbf{Step 3: Recursive Nesting}
+\[
+\text{Each child } Vn^{(j)} \in \text{SubV}_k(Vn^{(i)})
+\]
+
+\textbf{Step 4: Resolution Tree}
+\[
+T \equiv \text{Nested resolution of } Vn \text{ nodes}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 4.12 — Category-Like Composition of Vertex Spaces}
+
+\textit{Explanation: Output vector from one stabilized vertex may serve as input to another. This composition is associative.}
+
+\textbf{Step 1: Composition Chain}
+\[
+Vn^{(A)} \xrightarrow{\vec{v}_o} Vn^{(B)} \xrightarrow{\vec{v}_p} Vn^{(C)}
+\]
+
+\textbf{Step 2: Composition Operator}
+\[
+(Vn^{(A)} \circ Vn^{(B)}) \circ Vn^{(C)} = Vn^{(A)} \circ (Vn^{(B)} \circ Vn^{(C)})
+\]
+
+\textbf{Step 3: Closure Preservation}
+\[
+\text{AngleClosure}(Vn^{(i)}) = \text{true} \Rightarrow \text{Structure preserved across chain}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 4.13 — Formatics Defines a Geometric Logic}
+
+\textit{Explanation: Directional relations form logical operations: negation, conjunction, closure.}
+
+\textbf{Step 1: Negation}
+\[
+v_i \vdash -v_i
+\]
+
+\textbf{Step 2: Identity}
+\[
+v_i + -v_i \Rightarrow \text{Diameter}
+\]
+
+\textbf{Step 3: Conjunction (Relational Resolution)}
+\[
+\{v_1, v_2, v_3\} \Rightarrow \Delta(v_1, v_2, v_3)
+\]
+
+\textbf{Step 4: Closure (Truth Condition)}
+\[
+\sum \angle(\Delta) = \text{AngleClosure}(Vn) \Rightarrow \text{TRUE}
+\]
+\[
+\neg\text{Stabilize} \Rightarrow \text{FALSE}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 4.14 — Decision Boundaries via Angular Thresholds}
+
+\textit{Explanation: Formatics closure defines a sharp decision boundary — input sufficiency determines stabilization.}
+
+\textbf{Step 1: Directional Set}
+\[
+D = \{v_1, \dots, v_n\}
+\]
+
+\textbf{Step 2: Closure Threshold}
+\[
+\sum \angle(\Delta) = \text{AngleClosure}(Vn) \Rightarrow \text{Stabilize}
+\]
+\[
+\sum \angle(\Delta) < \text{AngleClosure}(Vn) \Rightarrow \neg\text{Stabilize}
+\]
+
+\textbf{Step 3: Binary Outcome}
+\[
+\text{Stabilize}(D) \Rightarrow \text{YES}
+\quad
+\neg\text{Stabilize}(D) \Rightarrow \text{NO}
+\]
+
+\textbf{Interpretation:}
+\[
+\text{Decision} = \text{Closure under relational input geometry}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Appendix A.5.5 — The Void as Semantic Resolution  %
+% (Bridge Between Structural and Computational)     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{A.5.5 — The Void as Semantic Resolution}
+
+\textbf{Definition: Semantic Result of Stabilization}
+
+Let:
+\[
+\mathcal{V}_n(D, r) \quad \text{be a stabilized Formatics vertex space}
+\]
+Then:
+\[
+\text{SemanticResult}(\mathcal{V}_n) := \text{that which remains or emerges when all triangle-based closure is complete}
+\]
+
+\vspace{0.5em}
+
+\textbf{Observation: This result takes different forms depending on n:}
+
+\begin{itemize}
+  \item \textbf{1D}: \texttt{ResolutionLine} — a stable bidirectional path
+  \item \textbf{2D}: \texttt{TensionPoint} — stabilization around a center (no interior void)
+  \item \textbf{3D}: \texttt{Void} — a central triangle-void (interior not used in closure)
+  \item \textbf{4D}: \texttt{EnclosedVolume} — full tetrahedral spatial resolution
+  \item \textbf{n > 4}: \texttt{ResolvedManifold} — high-dimensional surface or form enclosing directional structure
+\end{itemize}
+
+\textbf{Therefore:}
+\[
+\text{Void} \in \texttt{SemanticResult}
+\quad \text{but not } \texttt{SemanticResult} \equiv \text{Void}
+\]
+
+\vspace{0.5em}
+
+\textbf{Theorems Involving “Void” Remain Valid Under This View:}
+
+\begin{itemize}
+  \item \texttt{Void(V3)} in Theorems 1.3, 4.1, 5.2 — Valid
+  \item \texttt{Void(Vn)} for n ≠ 3 — Interpreted as \texttt{SemanticResult(Vn)}
+  \item Directional resolution (Stabilize) still defines output meaning
+\end{itemize}
+
+\vspace{0.5em}
+
+\textbf{Formatics Logical Adjustment:}
+
+Define a polymorphic resolution operator:
+\[
+\text{Resolve}(Vn(D, r)) \mapsto \texttt{SemanticResult}_n
+\]
+
+\vspace{0.5em}
+
+\textbf{Void becomes a special case:}
+\[
+\texttt{SemanticResult}_3 = \texttt{Void}
+\quad
+\texttt{SemanticResult}_2 = \texttt{TensionPoint}
+\quad
+\texttt{SemanticResult}_4 = \texttt{Volume}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Appendix A.6 — Formatics Resolution as Computation (Level 5)
+% Symbolic Theorems: 5.1 – 5.10, updated with SemanticResultₙ
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{A.6 Formatics Resolution as Computation}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 5.1 — Stabilization Is Computation}
+
+\textit{Explanation: Stabilizing a Formatics vertex space yields a dimension-specific result. This is computation.}
+
+\[
+\text{Resolve}(Vn(D, r)) = \texttt{SemanticResult}_n
+\]
+
+\[
+\texttt{SemanticResult}_n \in \{
+\texttt{ResolutionLine}, \texttt{TensionPoint}, \texttt{Void}, \texttt{EnclosedVolume}, \texttt{ResolvedManifold}
+\}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 5.2 — Void Is a Specific Semantic Result}
+
+\textit{Explanation: The void is valid only for n = 3; other outputs occur in other dimensions.}
+
+\[
+\texttt{SemanticResult}_3 = \texttt{Void}
+\quad
+\text{but in general: }
+\quad
+\text{Resolve}(Vn) = \texttt{SemanticResult}_n
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 5.3 — Directional Inference Forms a Logic System}
+
+\textit{Explanation: Negation, conjunction, and resolution form a computational logic.}
+
+\[
+v_i \vdash -v_i
+\quad
+\{v_1, v_2, v_3\} \vdash \Delta(v_1, v_2, v_3)
+\quad
+\sum \angle = \text{AngleClosure}(Vn) \Rightarrow \texttt{SemanticResult}_n
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 5.4 — Formatics Is a Typed System}
+
+\textit{Explanation: All vertex components and resolution outputs have definable types.}
+
+\[
+v_i : \texttt{Direction}
+\quad
+\Delta : \texttt{Triangle}
+\quad
+Vn : \texttt{VertexSpace}[n]
+\quad
+\texttt{SemanticResult}_n : \texttt{ResolvedOutput}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 5.5 — Resolution Behaves Like a Function}
+
+\textit{Explanation: A vertex space acts like a function from input directions to resolution output.}
+
+\[
+f_V: D \mapsto \texttt{SemanticResult}_n
+\quad
+f_V(D) := \text{Resolve}(Vn(D, r))
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 5.6 — Reduction to Minimal Resolution Form}
+
+\textit{Explanation: Only vectors that participate in resolution remain in the stabilized structure.}
+
+\[
+v_x \notin \bigcup \Delta_i \Rightarrow v_x \notin \text{Stabilize}(D)
+\]
+
+\[
+\text{MinimalStabilize}(D) := \bigcup \Delta_i
+\quad
+\text{Resolve} \text{ uses only contributing vectors}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 5.7 — Composition of Resolution Chains}
+
+\textit{Explanation: Vertex spaces compose like functions, passing resolution forward.}
+
+\[
+f: D_1 \mapsto \texttt{SemanticResult}_{n_1}
+\quad
+g: D_2 \cup \texttt{SemanticResult}_{n_1} \mapsto \texttt{SemanticResult}_{n_2}
+\]
+
+\[
+g \circ f: D_1 \cup D_2 \mapsto \texttt{SemanticResult}_{n_2}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 5.8 — Isomorphic Spaces Resolve Equivalently}
+
+\textit{Explanation: Rotation or reflection of direction sets does not affect resolution.}
+
+\[
+R: D \rightarrow D'
+\quad
+\text{where } R \text{ is symmetry}
+\Rightarrow
+\text{Resolve}(Vn(D)) = \text{Resolve}(Vn(D'))
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 5.9 — Directional Rules Simulate Logic Programs}
+
+\textit{Explanation: Formatics supports rule-based execution via directional closure.}
+
+\[
+\text{Rule: } \{v_a, v_b, v_c\} \Rightarrow \texttt{SemanticResult}_n
+\Rightarrow \text{assert consequence}
+\]
+
+\[
+\text{Each triangle resolution step acts as a logical clause}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Theorem 5.10 — Semantic Labeling via Resolution}
+
+\textit{Explanation: Each resolution result can be mapped to a symbolic label.}
+
+\[
+\text{Resolve}(Vn(D, r)) = \texttt{SemanticResult}_n
+\Rightarrow
+\lambda(\texttt{SemanticResult}_n) = \texttt{Label}
+\]
+
+\[
+\text{Labeling structure: }
+\lambda: \texttt{ResolvedOutput} \rightarrow \texttt{Symbol}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Appendix A.7.1 — Full Evaluation Logic            %
+% (Stabilize, Resolve, Rewrite Rules, Evaluation)   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{A.7.1 — Core Evaluation Logic: Stabilize and Resolve}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Stabilize(D)}
+
+\textit{Purpose:}  
+Reduces a directional set D to the set of stabilized relational enclosures (triangles), based on vector closure logic.
+
+\textbf{Input:}
+\[
+D = \{ v_1, v_2, \dots, v_n \}, \quad v_i \in \mathbb{R}^d, \|v_i\| = 1
+\]
+
+\textbf{Process:}
+\begin{enumerate}
+  \item Generate all 3-element subsets of D:
+  \[
+  \mathcal{T} = \left\{ \{v_i, v_j, v_k\} \mid i < j < k \right\}
+  \]
+
+  \item For each triplet:
+    \begin{itemize}
+      \item Ensure vectors are distinct and non-colinear
+      \item Form triangle:
+      \[
+      \Delta_{ijk} := \text{Polygon}(O + v_i,\ O + v_j,\ O + v_k)
+      \]
+    \end{itemize}
+
+  \item Return:
+  \[
+  T = \left\{ \Delta_{ijk} \mid \text{valid} \right\}
+  \]
+\end{enumerate}
+
+\textbf{Output:}
+TriangleSet \( T = \{ \Delta_1, \Delta_2, \dots \} \)  
+Each triangle is a minimal relational unit.
+
+\textbf{Failure Modes:}
+- \( |D| < 3 \) ⇒ \( T = \emptyset \)  
+- All triplets colinear ⇒ \( T = \emptyset \)
+
+\textbf{Typed Signature:}
+\[
+\text{Stabilize} : \texttt{DirectionSet} \to \texttt{TriangleSet}
+\]
+
+\textbf{Example:}
+\[
+\text{Stabilize}(\{v_1, v_2, v_3, v_4\}) =
+[\Delta(v_1, v_2, v_3), \Delta(v_1, v_2, v_4), \Delta(v_1, v_3, v_4), \Delta(v_2, v_3, v_4)]
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Resolve(Vn)}
+
+\textit{Purpose:}  
+Determines whether a vertex space has stabilized through full angular closure, and returns the dimension-specific resolution form.
+
+\textbf{Input:}
+\[
+\mathcal{V}_n(D, r),\quad D = \{v_1, \dots, v_k\}
+\]
+
+\textbf{Evaluation Steps:}
+\begin{enumerate}
+  \item Stabilize the direction set:
+  \[
+  T := \text{Stabilize}(D)
+  \]
+
+  \item Compute angle closure:
+  \[
+  A := \sum_{\Delta \in T} \angle(\Delta)
+  \]
+
+  \item Determine expected closure:
+  \[
+  \text{ExpectedClosure}_n =
+  \begin{cases}
+  180^\circ & n = 1 \\
+  360^\circ & n = 2 \\
+  180^\circ \cdot \binom{n}{3} & n \geq 3 \\
+  \end{cases}
+  \]
+
+  \item Compare A to expected:
+  \begin{itemize}
+    \item If \( A = \text{ExpectedClosure}_n \), return:
+    \[
+    \texttt{SemanticResult}_n \in
+    \{
+    \texttt{ResolutionLine}, \texttt{TensionPoint}, \texttt{Void}, \texttt{EnclosedVolume}, \texttt{ResolvedManifold}_n
+    \}
+    \]
+
+    \item If not, return:
+    \[
+    \texttt{ResolutionFailure}
+    \]
+  \end{itemize}
+\end{enumerate}
+
+\textbf{Typed Signature:}
+\[
+\text{Resolve} : \texttt{VertexSpace}[n] \to \texttt{ResolutionForm}_n \cup \{ \texttt{ResolutionFailure} \}
+\]
+
+\textbf{Example:}
+\[
+\text{Resolve}(V3(\{v_1, v_2, v_3\}, r)) = \texttt{Void}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Rewrite Rules (R1–R6)}
+
+R1:  
+\[
+\text{Stabilize}(\{v_1, v_2, v_3, v_4\}) \Rightarrow
+[\Delta(v_1, v_2, v_3), \Delta(v_1, v_2, v_4), \Delta(v_1, v_3, v_4), \Delta(v_2, v_3, v_4)]
+\]
+
+R2:  
+\[
+[\Delta_1, \dots, \Delta_k] \Rightarrow \sum \angle = 180^\circ \cdot k
+\]
+
+R3:  
+\[
+\sum \angle = \text{ExpectedClosure}_n \Rightarrow
+\text{Resolve}(Vn) = \texttt{SemanticResult}_n
+\]
+
+R4:  
+\[
+\sum \angle < \text{ExpectedClosure}_n \Rightarrow
+\text{Resolve}(Vn) = \texttt{ResolutionFailure}
+\]
+
+R5:  
+\[
+\text{Stabilize}(\{v_1, -v_1\}) \Rightarrow [\Delta(v_1, -v_1, 0)]
+\Rightarrow \sum \angle = 180^\circ
+\Rightarrow \text{Resolve}(V1) = \texttt{ResolutionLine}
+\]
+
+R6:  
+\[
+\text{Stabilize}(D) = [] \Rightarrow \text{Resolve}(Vn) = \texttt{ResolutionFailure}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Evaluation Traces}
+
+✅ \textit{Valid Resolution Example — Triforce:}
+```plaintext
+Input:
+V3({v1, v2, v3}, r)
+
+Step 1:
+Stabilize({v1, v2, v3}) 
+⇒ [Δ(v1, v2, v3), Δ(v2, v3, v1), Δ(v3, v1, v2)]    (R1)
+
+Step 2:
+[Δ₁, Δ₂, Δ₃] ⇒ ∑ angle = 3 × 180° = 540°          (R2)
+
+Step 3:
+540° = ExpectedClosure(V3)                         (R3)
+
+Final:
+Resolve(V3) = Void
+
+
+ \textit{Failed Resolution Example — Incomplete Input:}
+```plaintext
+Input:
+V3({v1, v2}, r)
+
+Step 1:
+Stabilize({v1, v2}) ⇒ []                          (R6)
+
+Step 2:
+No triangles ⇒ ∑ angle = 0°                       (R2)
+
+Step 3:
+0° < ExpectedClosure(V3) ⇒ ResolutionFailure      (R4)
+
+Final:
+Resolve(V3) = ResolutionFailure
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Appendix A.7.1.a — Recursive Vertex Evaluation    %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{A.7.1.a — Evaluation of Recursive Vertex Structures}
+
+\textbf{Purpose:}  
+To define how Formatics vertex spaces evaluate when they contain internal subvertices (i.e. recursive Formatics structures).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Structure of a Recursive Vertex}
+
+Let:
+\[
+\mathcal{V}_n^{(0)} = Vn(D_0, r_0)
+\]
+
+Contain subvertices:
+\[
+\text{SubV}_k := Vn(D_k, r_k), \quad r_k = s^k \cdot r_0,\ 0 < s < 1
+\]
+
+Let:
+\[
+\mathcal{V}_n^{(0)} = \{ \text{SubV}_1, \text{SubV}_2, \dots, \text{SubV}_m \}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Evaluation Rule: Recursive Resolve}
+
+\textbf{Rule R7:}  
+\[
+\forall k,\ \text{Resolve}(\text{SubV}_k) = \texttt{SemanticResult}_k
+\quad \Rightarrow \quad
+\text{Resolve}(Vn^{(0)}) = F(\texttt{SemanticResult}_1, \dots, \texttt{SemanticResult}_m)
+\]
+
+Where \( F \) is a vertex-dependent **aggregation function** that evaluates the combined resolution results of the subvertices.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Definition: Aggregated Resolve Function \( F \)}
+
+\textit{Interpretation:}  
+The parent vertex \( Vn^{(0)} \) does not resolve independently — its output is derived from the stabilization results of its internal components.
+
+\textbf{Example (Recursive Tetrahedron):}
+\[
+\texttt{SemanticResult}_4 = \texttt{EnclosedVolume}
+\quad \text{iff all SubV}_k \text{ resolve to triangle faces enclosing space}
+\]
+
+\textbf{If any SubV}_k fails:
+\[
+\text{Resolve}(SubV}_k) = \texttt{ResolutionFailure}
+\Rightarrow
+\text{Resolve}(Vn^{(0)}) = \texttt{ResolutionFailure}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Trace Format for Recursive Evaluation}
+
+```plaintext
+Input:
+V4(D₀, r₀) containing SubV₁, SubV₂, SubV₃, SubV₄
+
+Step 1:
+Resolve(SubV₁) = Triangle₁
+Resolve(SubV₂) = Triangle₂
+Resolve(SubV₃) = Triangle₃
+Resolve(SubV₄) = Triangle₄
+
+Step 2:
+SubV₁–₄ define faces of a tetrahedron
+
+Step 3:
+F(Triangle₁, ..., Triangle₄) = EnclosedVolume
+
+Final:
+Resolve(V4) = EnclosedVolume
+
+Failure Case:
+Resolve(SubV₃) = ResolutionFailure
+⇒ Resolve(V4) = ResolutionFailure
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Typed Signature}
+
+Resolve : RecursiveVertexSpace[n] → ResolutionFormₙ ∪ {ResolutionFailure}
+Where:
+
+
+RecursiveVertexSpace[n] := VertexSpace[n] ∪ { SubV₁, SubV₂, ..., SubVₖ }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Symbolic Grammar Extension}
+
+
+<RecursiveResolve> ::= "Resolve(" <RecursiveVertexSpace> ")"
+<RecursiveVertexSpace> ::= <VertexSpace> "," "{" <SubVertexList> "}
+
+Example: 
+
+Resolve(V4({v1, v2, v3, v4}, r0), {SubV1, SubV2, SubV3, SubV4}) = EnclosedVolume
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Appendix A.7.1.b — Aggregation Function F in Resolve(Vn)  %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{A.7.1.b — Aggregation Function for Recursive Resolution}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Purpose:}
+
+To define how the function:
+\[
+F(\texttt{SemanticResult}_1, \dots, \texttt{SemanticResult}_k)
+\]
+maps subvertex resolution results into a resolved output for the parent vertex space \( \mathcal{V}_n^{(0)} \).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{General Signature:}
+
+\[
+F : [\texttt{SemanticResult}_k] \to \texttt{SemanticResult}_n \cup \{ \texttt{ResolutionFailure} \}
+\]
+
+\textbf{Failure Rule:}
+\[
+\exists k : \texttt{SemanticResult}_k = \texttt{ResolutionFailure}
+\Rightarrow F = \texttt{ResolutionFailure}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Dimension-Specific Aggregation Rules}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{1D Vertex — Diameter}
+
+\[
+\mathcal{V}_1 = \{ \text{SubV}_1, \text{SubV}_2 \},\quad \text{each resolves to a direction + inverse}
+\Rightarrow F(\texttt{ResolutionLine}, \texttt{ResolutionLine}) = \texttt{ResolutionLine}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{2D Vertex — Hourglass}
+
+\[
+F(\texttt{TensionPoint}, \texttt{TensionPoint}) = \texttt{TensionPoint}
+\quad \text{(subvertices reflect symmetrical closure)}
+\]
+
+If triangle count \( \ne 2 \), or angle sum \( \ne 360^\circ \), return:
+\[
+\texttt{ResolutionFailure}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{3D Vertex — Triforce}
+
+Subvertices must form three directional triangles around a void.
+
+\[
+F(\texttt{Triangle}_1, \texttt{Triangle}_2, \texttt{Triangle}_3) = \texttt{Void}
+\]
+
+Conditions:
+- Each result is a triangle with distinct directional inputs
+- Triangles must form a closed planar cycle
+
+Otherwise:
+\[
+F = \texttt{ResolutionFailure}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{4D Vertex — Tetrahedron}
+
+Subvertices must resolve into 4 triangle faces enclosing a volume.
+
+\[
+F(\texttt{Triangle}_1, \dots, \texttt{Triangle}_4) = \texttt{EnclosedVolume}
+\]
+
+Conditions:
+- All triangles are valid
+- They geometrically close into a tetrahedron
+
+Otherwise:
+\[
+F = \texttt{ResolutionFailure}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{n > 4 — Generalized Manifold Resolution}
+
+\[
+F(\texttt{Triangle}_1, \dots, \texttt{Triangle}_k)
+\Rightarrow \texttt{ResolvedManifold}_n
+\quad \text{iff full closure topology is satisfied}
+\]
+
+Let:
+\[
+k = \binom{n}{3},\quad \text{expected triangle count}
+\]
+
+Then:
+- If all triangle faces align to form a closed, orientable boundary surface,
+- Return:
+\[
+F = \texttt{ResolvedManifold}_n
+\]
+Else:
+\[
+F = \texttt{ResolutionFailure}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Interpretation and Trace Example}
+
+Resolve(V4) with:
+SubV1 = Δ(v1, v2, v3)
+SubV2 = Δ(v1, v2, v4)
+SubV3 = Δ(v1, v3, v4)
+SubV4 = Δ(v2, v3, v4)
+
+All SubVᵢ resolve ⇒ Apply F
+F(Δ₁, Δ₂, Δ₃, Δ₄) = EnclosedVolume
+Resolve(V4) = EnclosedVolume
+plaintext
+Copy
+Edit
+If any SubVᵢ = ResolutionFailure ⇒ F = ResolutionFailure
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Symbolic Grammar Rule Extension}
+
+
+<AggregateResolve> ::= "F(" <ResultList> ")" "=" <SemanticResult>
+<ResultList> ::= <SemanticResult> | <SemanticResult> "," <ResultList>
+Example:
+
+
+F(Void, Void, Void) = Void
+F(Δ₁, Δ₂, Δ₃, Δ₄) = EnclosedVolume
+F(TensionPoint, TensionPoint) = TensionPoint
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Appendix A.7.1.c — Evaluation Normalization               %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{A.7.1.c — Evaluation Normalization Rules}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Purpose:}
+
+To define how Formatics resolution expressions reduce to **normal forms**:
+- Minimal triangle sets
+- Unique resolution outputs
+- Consistent results across equivalent derivations
+
+This enables:
+- Structural comparison
+- Proof optimization
+- Confluent computation
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Definition: Normal Form}
+
+Let:
+\[
+\text{NF}(Vn) := \text{ResolvedOutput}_n \quad \text{with no unresolved or redundant components}
+\]
+
+A Formatics evaluation trace reaches normal form if:
+- All triangles are valid and closed
+- Total angle = ExpectedClosureₙ
+- The result is:
+\[
+\texttt{SemanticResult}_n \in
+\{
+\texttt{ResolutionLine}, \texttt{TensionPoint}, \texttt{Void}, \texttt{EnclosedVolume}, \texttt{ResolvedManifold}_n
+\}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Normalization Rule N1 — Triangle Reduction}
+
+\[
+\text{If } \exists \Delta_i, \Delta_j \text{ such that } \Delta_i = \Delta_j
+\Rightarrow \text{remove duplicate}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Normalization Rule N2 — Subvertex Flattening}
+
+\[
+\text{If } \text{SubV}_k \Rightarrow \texttt{Result}_k
+\Rightarrow \text{Aggregate at parent level}
+\Rightarrow
+Vn^{(0)} \Rightarrow \texttt{SemanticResult}_n
+\]
+
+This removes internal nesting once results are resolved.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Normalization Rule N3 — Empty Resolution Collapse}
+
+\[
+\text{If } \text{Stabilize}(D) = [] 
+\Rightarrow \text{Resolve}(Vn) = \texttt{ResolutionFailure}
+\Rightarrow \text{NF}(Vn) = \bot
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Normalization Rule N4 — Canonical Triangle Set Order}
+
+Sort:
+\[
+\text{Stabilize}(D) = [\Delta_{ijk}] \quad \text{into lex order: } i < j < k
+\]
+
+This ensures consistent outputs for identical directional sets.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Trace Form: Normalized Resolution}
+
+
+Input: V4({v1, v2, v3, v4}, r)
+
+Stabilize:
+→ [Δ(123), Δ(124), Δ(134), Δ(234)]
+
+AngleClosure:
+→ 720°
+
+Resolve:
+→ EnclosedVolume
+
+Normalize:
+→ NF(V4) = EnclosedVolume
+
+Input: V3({v1, v2, v3}, r)
+
+Stabilize:
+→ [Δ(123), Δ(231), Δ(312)]
+
+Normalize (sort + remove duplicates):
+→ [Δ(123), Δ(231), Δ(312)] (unique)
+
+AngleClosure:
+→ 540°
+
+Resolve:
+→ NF(V3) = Void
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Typed Signature}
+
+Normalize : ResolutionTrace → SemanticResultₙ ∪ {⊥}
+Where:
+
+⊥
+⊥ is the bottom element (failure / undefined)
+
+SemanticResult
+𝑛
+SemanticResult 
+n
+​
+  is the canonical output
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Symbolic Grammar Extension}
+
+
+<NormalizeCall> ::= "Normalize(" <ResolveTrace> ")"
+<ResolveTrace> ::= <StabilizeCall> "⇒" <TriangleSet> "⇒" <AngleSum> "⇒" <SemanticResult>
+Example:
+
+
+Normalize(Resolve(V3({v1, v2, v3}, r))) = Void
+Normalize(Resolve(V3({v1, v2}, r))) = ⊥
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Appendix A.7.1.d — Evaluation Summary & Rule Index %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{A.7.1.d — Evaluation Summary and Rule Index}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Core Functions}
+
+\begin{itemize}
+  \item \texttt{Stabilize(D)}  
+    → Returns all valid non-colinear triangles from input set D  
+    → Type: DirectionSet → TriangleSet
+
+  \item \texttt{AngleClosure(Vn)}  
+    → Returns total angular sum of all triangles  
+    → Type: VertexSpace → Degrees
+
+  \item \texttt{Resolve(Vn)}  
+    → Returns typed semantic result (Void, Volume, etc.) or ResolutionFailure  
+    → Type: VertexSpace → ResolutionFormₙ ∪ {⊥}
+
+  \item \texttt{F(...)} (Aggregation Function)  
+    → Reduces multiple SubVᵢ results into one parent result  
+    → Type: [SemanticResultₖ] → SemanticResultₙ ∪ {⊥}
+
+  \item \texttt{Normalize(...)}  
+    → Converts full evaluation trace into canonical resolution result  
+    → Type: EvaluationTrace → ResolutionFormₙ ∪ {⊥}
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Resolution Types (SemanticResultₙ)}
+
+\begin{itemize}
+  \item \texttt{ResolutionLine} — 1D (diameter)
+  \item \texttt{TensionPoint} — 2D (hourglass)
+  \item \texttt{Void} — 3D (Triforce)
+  \item \texttt{EnclosedVolume} — 4D (tetrahedron)
+  \item \texttt{ResolvedManifoldₙ} — n > 4
+  \item \texttt{ResolutionFailure} (⊥) — no stabilization possible
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Rewrite Rules Index (R1–R6)}
+
+\begin{itemize}
+  \item \textbf{R1:} Stabilize(D) → TriangleSet
+  \item \textbf{R2:} TriangleSet → AngleSum
+  \item \textbf{R3:} Valid closure → SemanticResultₙ
+  \item \textbf{R4:} Incomplete closure → ⊥
+  \item \textbf{R5:} Single pair (1D) → ResolutionLine
+  \item \textbf{R6:} No triangles → ⊥
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Recursive Evaluation Rules}
+
+\begin{itemize}
+  \item \textbf{R7:} Resolve(SubV₁…SubVₖ)  
+    → Aggregate via F → Parent Resolution Result
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Normalization Rules Index (N1–N4)}
+
+\begin{itemize}
+  \item \textbf{N1:} Remove duplicate triangles
+  \item \textbf{N2:} Collapse SubVᵢ into parent result
+  \item \textbf{N3:} Empty triangle set ⇒ ⊥
+  \item \textbf{N4:} Sort triangle set into canonical order
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Evaluation Flow}
+
+
+Vn(D, r)
+⇒ Stabilize(D)
+⇒ TriangleSet
+⇒ AngleSum
+⇒ Compare to ExpectedClosureₙ
+⇒ If match ⇒ SemanticResultₙ
+⇒ Else ⇒ ResolutionFailure (⊥)
+⇒ Normalize(trace) = NF(Vn)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Appendix A.7.2 — Composition of Vertex Spaces      %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Appendix A.7.2 — Composition of Vertex Spaces}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Purpose:}
+
+To define how two Formatics vertex spaces can be composed — that is, how the resolution output of one may serve as input to another, producing a new resolvable system.
+
+This mirrors:
+- Function composition in computation
+- Morphism chaining in category theory
+- Structural propagation in layered logic systems
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Definition: Compose}
+
+Let:
+\[
+\mathcal{V}_n^{(A)} = Vn(D_A, r_A)
+\quad \text{and} \quad
+\mathcal{V}_n^{(B)} = Vn(D_B, r_B)
+\]
+
+Let:
+\[
+\texttt{SemanticResult}_A := \text{Resolve}(\mathcal{V}_n^{(A)})
+\]
+
+If:
+\[
+\texttt{SemanticResult}_A \in D_B
+\quad \text{(i.e., passed forward)}
+\]
+
+Then:
+\[
+\text{Compose}(Vn^{(A)}, Vn^{(B)}) := Vn^{(C)}(D_A \cup D_B, r_C)
+\]
+
+Where:
+\[
+r_C := \max(r_A, r_B)
+\quad \text{(or define bounding scope of composition)}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Typed Signature:}
+
+```plaintext
+Compose : VertexSpace[n] × VertexSpace[n] → VertexSpace[n] ∪ {InvalidComposition}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Conditions for Valid Composition}
+
+\begin{itemize}
+\item The output of A must be part of the input set of B:
+
+SemanticResult
+𝐴
+⊆
+𝐷
+𝐵
+SemanticResult 
+A
+​
+ ⊆D 
+B
+​
+ 
+\item Both vertex spaces must independently satisfy:
+
+Resolve
+(
+𝑉
+𝑛
+(
+𝐴
+)
+)
+≠
+ResolutionFailure
+and
+Resolve
+(
+𝑉
+𝑛
+(
+𝐵
+)
+)
+≠
+ResolutionFailure
+Resolve(Vn 
+(A)
+ )
+
+=ResolutionFailureandResolve(Vn 
+(B)
+ )
+
+=ResolutionFailure
+\item Composed triangle set must still satisfy:
+
+∑
+∠
+=
+AngleClosure
+(
+𝑉
+𝑛
+)
+∑∠=AngleClosure(Vn)
+\end{itemize}
+
+If any condition fails:
+
+Compose
+(
+𝑉
+𝑛
+(
+𝐴
+)
+,
+𝑉
+𝑛
+(
+𝐵
+)
+)
+=
+InvalidComposition
+Compose(Vn 
+(A)
+ ,Vn 
+(B)
+ )=InvalidComposition
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Rewrite Rule R8 — Composition Closure}
+
+
+If Resolve(Vn_A) = Result_A
+and Result_A ∈ D_B
+and Resolve(Vn_B) = Result_B
+⇒ Compose(Vn_A, Vn_B) = Vn_C
+⇒ Resolve(Vn_C) = Result_C
+If any condition fails:
+
+⇒
+𝐶
+𝑜
+𝑚
+𝑝
+𝑜
+𝑠
+𝑒
+=
+InvalidComposition
+⇒Compose=InvalidComposition
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Evaluation Trace Example}
+
+
+Input:
+V3_A({v1, v2, v3}, r)
+⇒ Resolve = Void
+
+V3_B({Void, v4, v5}, r)
+⇒ Resolve = Void
+
+Compose(V3_A, V3_B)
+⇒ V3_C({v1, v2, v3, v4, v5}, r)
+⇒ Resolve = Void
+plaintext
+Copy
+Edit
+Failure Case:
+V3_A({v1, v2}) ⇒ Resolve = ResolutionFailure
+⇒ Compose = InvalidComposition
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Symbolic Grammar Extension}
+
+
+<ComposeCall> ::= "Compose(" <VertexSpace> "," <VertexSpace> ")"
+<ComposeResult> ::= <VertexSpace> | "InvalidComposition"
+Example:
+
+
+Compose(V3_A, V3_B) = V3_C
+Compose(V3_A, V3_B) = InvalidComposition
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Interpretation}
+
+Composition is structural, not symbolic
+
+Outputs of stabilized vertex spaces become inputs to downstream structures
+
+Resolution is maintained only if closure and directionality persist
+
+This enables:
+
+Multi-node Formatics circuits
+
+Directional logic trees
+
+Causal chains of resolution
+
+Foundations for Formatics category theory
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Appendix A.7.2.a — Composition Summary & Rule Index       %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{A.7.2.a — Composition Summary and Rule Index}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Core Operator: Compose}
+
+\textit{Purpose:}  
+To chain two Formatics vertex spaces when the semantic result of the first provides directional input to the second.
+
+\[
+\text{Compose}(Vn_A, Vn_B) := Vn_C(D_A \cup D_B, r_C)
+\quad \text{iff } \texttt{SemanticResult}_A \in D_B
+\]
+
+\textbf{Typed Signature:}
+\[
+\text{Compose} : \texttt{VertexSpace}_n \times \texttt{VertexSpace}_n \to \texttt{VertexSpace}_n \cup \{\texttt{InvalidComposition}\}
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Composition Validity Conditions}
+
+\begin{itemize}
+  \item A resolves: \( \text{Resolve}(Vn_A) \ne \texttt{ResolutionFailure} \)
+  \item B resolves: \( \text{Resolve}(Vn_B) \ne \texttt{ResolutionFailure} \)
+  \item A’s result is used by B: \( \texttt{SemanticResult}_A \subseteq D_B \)
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Resolution Behavior}
+
+\begin{itemize}
+  \item If all conditions are met:
+  \[
+  \text{Resolve}(Compose(Vn_A, Vn_B)) = \texttt{SemanticResult}_C
+  \]
+  \item If any fail:
+  \[
+  \text{Compose} = \texttt{InvalidComposition}
+  \]
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Rewrite Rule R8 — Compositional Closure}
+
+If Resolve(Vn_A) = Result_A
+and Result_A ∈ D_B
+⇒ Compose(Vn_A, Vn_B) = Vn_C
+⇒ Resolve(Vn_C) = Result_C
+Else ⇒ InvalidComposition
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Evaluation Trace Example}
+
+
+Resolve(V3_A({v1, v2, v3})) = Void
+Resolve(V3_B({Void, v4, v5})) = Void
+Compose(V3_A, V3_B) = V3_C({v1, v2, v3, v4, v5})
+Resolve(V3_C) = Void
+plaintext
+Copy
+Edit
+Resolve(V3_A({v1, v2})) = ResolutionFailure
+⇒ Compose = InvalidComposition
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Symbolic Grammar Extension Recap}
+
+<ComposeCall> ::= "Compose(" <VertexSpace> "," <VertexSpace> ")"
+<ComposeResult> ::= <VertexSpace> | "InvalidComposition"
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{System Impact:}
+
+Enables Formatics circuits, resolution graphs, and computation chains
+
+Prepares Formatics for categorical modeling (objects: Vn, morphisms: resolution paths)
+
+Maintains dimension and directional consistency across composed structures
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Appendix A.7.3 — Formatics Typing System          %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{A.7.3 — Formatics Typing System}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Purpose:}
+
+To define the core types, operator signatures, and output domains of the Formatics evaluation system, enabling:
+- Type-checking of evaluation flows
+- Function safety and predictability
+- Logical consistency of composed systems
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Atomic Types}
+
+\begin{itemize}
+  \item \texttt{Direction}  
+    → A normalized vector \( v \in \mathbb{R}^n \), representing a directional input
+
+  \item \texttt{Triangle}  
+    → A 2-simplex formed by three non-colinear directions
+
+  \item \texttt{VertexSpace[n]}  
+    → A bounded space receiving \( n \) distinct directional vectors
+
+  \item \texttt{AngleSum}  
+    → A scalar (in degrees) computed from a set of triangles
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Composite Types}
+
+\begin{itemize}
+  \item \texttt{DirectionSet}  
+    → Finite set of \texttt{Direction}
+
+  \item \texttt{TriangleSet}  
+    → Finite set of \texttt{Triangle}
+
+  \item \texttt{SubVertexList}  
+    → Ordered list of \texttt{VertexSpace[n]}
+
+  \item \texttt{ResolutionFormₙ}  
+    → Dimension-specific output from a resolved vertex
+
+    \[
+    \texttt{ResolutionFormₙ} :=
+    \begin{cases}
+    \texttt{ResolutionLine} & n = 1 \\
+    \texttt{TensionPoint} & n = 2 \\
+    \texttt{Void} & n = 3 \\
+    \texttt{EnclosedVolume} & n = 4 \\
+    \texttt{ResolvedManifold}_n & n > 4
+    \end{cases}
+    \]
+
+  \item \texttt{ResolvedOutput}  
+    → Any \texttt{ResolutionFormₙ} or \texttt{ResolutionFailure}
+
+  \item \texttt{ResolutionFailure} := ⊥  
+    → Failure to stabilize due to insufficient direction, invalid geometry, or angle mismatch
+
+  \item \texttt{RecursiveVertexSpace[n]}  
+    → A \texttt{VertexSpace[n]} containing a \texttt{SubVertexList}
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Operator Type Signatures}
+
+\begin{itemize}
+  \item \texttt{Stabilize}  
+    \[
+    \texttt{Stabilize} : \texttt{DirectionSet} \to \texttt{TriangleSet}
+    \]
+
+  \item \texttt{AngleClosure}  
+    \[
+    \texttt{AngleClosure} : \texttt{VertexSpace}[n] \to \texttt{AngleSum}
+    \]
+
+  \item \texttt{Resolve}  
+    \[
+    \texttt{Resolve} : \texttt{VertexSpace}[n] \to \texttt{ResolutionFormₙ} \cup \{\bot\}
+    \]
+
+  \item \texttt{Resolve} (recursive)  
+    \[
+    \texttt{Resolve} : \texttt{RecursiveVertexSpace}[n] \to \texttt{ResolutionFormₙ} \cup \{\bot\}
+    \]
+
+  \item \texttt{F} (aggregation function)  
+    \[
+    F : [\texttt{ResolutionForm}_k] \to \texttt{ResolutionForm}_n \cup \{\bot\}
+    \]
+
+  \item \texttt{Compose}  
+    \[
+    \texttt{Compose} : \texttt{VertexSpace}[n] \times \texttt{VertexSpace}[n] \to \texttt{VertexSpace}[n] \cup \{\texttt{InvalidComposition}\}
+    \]
+
+  \item \texttt{Normalize}  
+    \[
+    \texttt{Normalize} : \texttt{ResolveTrace} \to \texttt{ResolutionForm}_n \cup \{\bot\}
+    \]
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Type Hierarchies and Subtypes}
+
+\begin{itemize}
+  \item \texttt{Direction} ⊂ \texttt{DirectionSet}
+  \item \texttt{Triangle} ⊂ \texttt{TriangleSet}
+  \item \texttt{ResolutionFormₙ} ⊂ \texttt{ResolvedOutput}
+  \item \texttt{VertexSpace[n]} ⊂ \texttt{RecursiveVertexSpace[n]}
+  \item ⊥ ∉ \texttt{ResolutionFormₙ}
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Failure and Type Invalidation}
+
+\textit{Rules:}
+
+- If \( \texttt{Stabilize}(D) = \emptyset \Rightarrow \texttt{Resolve}(Vn) = \bot \)
+- If angle sum ≠ expected closure ⇒ ⊥
+- If any subvertex fails ⇒ parent resolution = ⊥
+- ⊥ is atomic and terminal — cannot be composed, normalized, or resolved
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Type Compatibility for Composition}
+
+Let:
+\[
+\texttt{Resolve}(Vn_A) = \texttt{SemanticResult}_A
+\quad \text{and} \quad \texttt{SemanticResult}_A \in D_B
+\]
+
+Then:
+\[
+\texttt{Compose}(Vn_A, Vn_B) \Rightarrow Vn_C
+\quad \text{else } \texttt{InvalidComposition}
+\]
+
+Ensures that only compatible resolution outputs can chain.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Type Flow Example}
+
+Input:
+D = {v1, v2, v3, v4}
+→ DirectionSet
+
+Stabilize(D)
+→ TriangleSet T = {Δ₁, Δ₂, Δ₃, Δ₄}
+
+AngleClosure(V4)
+→ 720°
+
+Resolve(V4)
+→ ResolutionForm₄ = EnclosedVolume
+
+Normalize(ResolveTrace)
+→ NF(V4) = EnclosedVolume : ResolutionForm₄
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Semantic Result Type Table}
+
+Dimension n	Resolution Output Type
+1	\texttt{ResolutionLine}
+2	\texttt{TensionPoint}
+3	\texttt{Void}
+4	\texttt{EnclosedVolume}
+𝑛
+>
+4
+n>4	\texttt{ResolvedManifoldₙ}
+Any invalid	⊥ = \texttt{ResolutionFailure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Appendix A.7.4 — Rewrite Engine and Evaluation Grammar    %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection*{A.7.4 — Formatics Rewrite Engine and Evaluation Grammar}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Purpose:}
+
+To formalize the **rewrite and evaluation language** used to process Formatics vertex expressions, transforming them from:
+- Direction sets ⇒ triangles ⇒ angle sums ⇒ semantic results  
+- While handling failures, composition, and recursive resolution
+
+This provides the symbolic backbone for:
+- Execution
+- Proof automation
+- Normalization
+- Categorical modeling
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Grammar Constructs}
+
+\textit{Expressions:}
+```ebnf
+<Direction> ::= "v" <Integer>
+<Negation>  ::= "-" <Direction>
+<DirectionSet> ::= "{" <DirectionList> "}"
+<DirectionList> ::= <Direction> | <Direction> "," <DirectionList>
+
+<Triangle> ::= "Δ(" <Direction> "," <Direction> "," <Direction> ")"
+<TriangleSet> ::= "[" <TriangleList> "]"
+<TriangleList> ::= <Triangle> | <Triangle> "," <TriangleList>
+
+<VertexSpace> ::= "V" <Integer> "(" <DirectionSet> "," "r" <Integer> ")"
+<SubVertex> ::= "SubV" <Integer> "(" <VertexSpace> "," "depth" <Integer> ")"
+<RecursiveVertexSpace> ::= <VertexSpace> "," "{" <SubVertexList> "}"
+<SubVertexList> ::= <SubVertex> | <SubVertex> "," <SubVertexList>
+
+<SemanticResult> ::= "ResolutionLine" | "TensionPoint" | "Void" | "EnclosedVolume" | "ResolvedManifold" | "⊥"
+\textit{Core Evaluations:}
+
+ebnf
+Copy
+Edit
+<StabilizeCall> ::= "Stabilize(" <DirectionSet> ")"
+<AngleSum> ::= "∑" <TriangleSet> "." "angle" "=" <Integer> "°"
+<ResolveCall> ::= "Resolve(" <VertexSpace> ")"
+<NormalizeCall> ::= "Normalize(" <ResolveCall> ")"
+<ComposeCall> ::= "Compose(" <VertexSpace> "," <VertexSpace> ")"
+<AggregateResolve> ::= "F(" <SemanticResultList> ")" "=" <SemanticResult>
+<SemanticResultList> ::= <SemanticResult> | <SemanticResult> "," <SemanticResultList>
+\textit{Rewrite Chain Format:}
+
+plaintext
+Copy
+Edit
+Expression₁ ⇒ Expression₂
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Rewrite Chain Template}
+
+plaintext
+Copy
+Edit
+1. Stabilize({v1, v2, v3, v4}) 
+⇒ [Δ(v1,v2,v3), Δ(v1,v2,v4), Δ(v1,v3,v4), Δ(v2,v3,v4)]    (R1)
+
+2. ∑ angles = 4 × 180° = 720°                             (R2)
+
+3. 720° = AngleClosure(V4) ⇒ Resolve(V4) = EnclosedVolume  (R3)
+
+4. Normalize(...) ⇒ EnclosedVolume                        (N4)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Traceable Evaluation Path (Standard Form)}
+
+plaintext
+Copy
+Edit
+Input: Vn(D, r)
+
+→ Stabilize(D)
+→ TriangleSet T
+→ ∑ angle(T) = A
+→ Compare A to ExpectedClosureₙ
+→ If A = ExpectedClosureₙ ⇒ Resolve(Vn) = SemanticResultₙ
+→ Else ⇒ ⊥
+→ Normalize(trace) = NF(Vn)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Failure Handling Rules}
+
+\begin{itemize}
+\item If triangle set is empty: ⊥
+\item If angle sum < closure target: ⊥
+\item If any subvertex fails: ⊥
+\item If Compose links unmatched result: InvalidComposition
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Rewrite Rule Extensions}
+
+R1–R6 are defined in A.7.1.d
+R7 covers recursive resolution
+R8 covers composition
+All rewrite rules follow the generic schema:
+
+Expression
+1
+⇒
+Expression
+2
+iff (closure, type, or structure condition holds)
+Expression 
+1
+​
+ ⇒Expression 
+2
+​
+ iff (closure, type, or structure condition holds)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Semantic Result Canonicalization}
+
+\begin{itemize}
+\item All results are normalized to a canonical ResolutionFormₙ
+\item Canonical forms are sorted and duplicate-free
+\item Normalization is idempotent:
+
+Normalize
+(
+Normalize
+(
+𝐸
+)
+)
+=
+Normalize
+(
+𝐸
+)
+Normalize(Normalize(E))=Normalize(E)
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Output Symbols}
+
+SemanticResult
+𝑛
+∈
+{
+ResolutionLine
+,
+ 
+TensionPoint
+,
+ 
+Void
+,
+ 
+EnclosedVolume
+,
+ 
+ResolvedManifold
+𝑛
+,
+ 
+⊥
+}
+SemanticResult 
+n
+​
+ ∈{ResolutionLine, TensionPoint, Void, EnclosedVolume, ResolvedManifold 
+n
+​
+ , ⊥}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Example Execution Trace}
+
+Input: V3({v1, v2, v3}, r)
+
+→ Stabilize({v1, v2, v3}) 
+⇒ [Δ(123), Δ(231), Δ(312)]      (R1)
+
+→ ∑ angle = 3 × 180° = 540°     (R2)
+
+→ 540° = ExpectedClosure₃       (R3)
+
+→ Resolve(V3) = Void            (R3)
+
+→ Normalize(Resolve(V3)) = Void
+plaintext
+Copy
+Edit
+Input: V4({v1, v2}, r)
+
+→ Stabilize({v1, v2}) = []      (R6)
+
+→ ∑ angle = 0°                  (R2)
+
+→ 0° < 720° ⇒ ⊥                 (R4)
+
+→ Normalize(...) = ⊥
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{System Role}
+
+This grammar + rewrite system enables:
+
+Formal interpreters
+
+Automated proof engines
+
+Typed evaluation workflows
+
+Reduction pipelines

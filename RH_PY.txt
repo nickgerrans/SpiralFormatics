@@ -1,0 +1,2222 @@
+output35
+
+# Compute spectral energy decay over time from φ_n(t) and Spiral Hamiltonian eigenvalues
+energies_over_time = []
+
+for phi in phi_history:
+    energy = np.sum((phi**2) * lambda_n)
+    energies_over_time.append(energy)
+
+# Plot the energy decay curve
+plt.figure(figsize=(10, 5))
+plt.plot(np.arange(len(energies_over_time)) * dt, energies_over_time, marker='o', color='crimson')
+plt.title('Spectral Energy Decay of Spiral Field Over Time')
+plt.xlabel('Time (t)')
+plt.ylabel('Energy = Σ λₙ |φₙ(t)|²')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+
+output36
+# Compute normalized energy and entropy over time
+epsilon_t = np.array(energies_over_time) / energies_over_time[0]
+sigma_t = np.array(spectral_entropies) / spectral_entropies[0]
+
+# Compute Spiral Memory Coefficient over time
+spiral_memory_coefficient = sigma_t / epsilon_t
+
+# Plot the Spiral Memory Coefficient over time
+plt.figure(figsize=(10, 5))
+plt.plot(np.arange(len(spiral_memory_coefficient)) * dt, spiral_memory_coefficient, marker='o', color='teal')
+plt.title('Spiral Memory Coefficient Over Time')
+plt.xlabel('Time (t)')
+plt.ylabel('Memory Coefficient 𝓜(t) = σ(t) / ε(t)')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+
+output37
+
+# Compute Spiral Memory-Weighted Trace across all time steps
+trace_memory_weighted = spiral_memory_coefficient * np.array(energies_over_time)
+
+# Plot the weighted trace alongside energy and entropy
+plt.figure(figsize=(12, 5))
+plt.plot(np.arange(len(trace_memory_weighted)) * dt, trace_memory_weighted, label='Memory-Weighted Trace', color='darkorange')
+plt.plot(np.arange(len(epsilon_t)) * dt, np.array(energies_over_time), label='Energy', linestyle='--', color='crimson')
+plt.plot(np.arange(len(sigma_t)) * dt, sigma_t * energies_over_time[0], label='Entropy (Rescaled)', linestyle=':', color='navy')
+plt.title('Spiral Memory-Weighted Trace Over Time')
+plt.xlabel('Time (t)')
+plt.ylabel('Weighted Trace / Energy')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+k
+
+Conversation opened. 1 unread message.
+
+Skip to content
+Using Gmail with screen readers
+1 of 12,692
+(no subject)
+Inbox
+
+
+Nicholas Gerrans <nickgerrans0@gmail.com>
+2:34 AM (0 minutes ago)
+to me
+
+
+output33
+
+# Fixing the eigh() call to remove the unsupported 'eigvals_only' keyword
+eigvals = []
+
+for sigma in sigma_vals:
+    # Compute weights
+    w = np.array([p**(-sigma) * np.sin(0.5 * delta * lp)**4 for p, lp in zip(primes, log_primes)])
+    w_sq = w ** 2
+
+    # Construct compression operator matrix H_sigma
+    H_sigma = np.zeros((N, N), dtype=complex)
+    for i in range(N):
+        for j in range(N):
+            diff = t_vals[i] - t_vals[j]
+            H_sigma[i, j] = np.sum(w_sq * np.exp(-1j * diff * log_primes))
+
+    H_real = H_sigma.real
+
+    # Diagonalize
+    eigval = eigh(H_real)[0]  # Only eigenvalues
+    eigval = np.clip(eigval, 1e-12, None)
+    eigval /= np.sum(eigval)  # Normalize
+
+    # Store leading eigenvalue and entropy
+    leading_eigenvalues.append(np.max(eigval))
+    entropy = -np.sum(eigval * np.log(eigval))
+    entropies.append(entropy)
+
+# Plot results
+plt.figure(figsize=(12, 5))
+
+plt.subplot(1, 2, 1)
+plt.plot(sigma_vals, leading_eigenvalues, marker='o')
+plt.title("Leading Eigenvalue vs σ")
+plt.xlabel("σ")
+plt.ylabel("Leading Eigenvalue")
+
+plt.subplot(1, 2, 2)
+plt.plot(sigma_vals, entropies, marker='o')
+plt.title("Spectral Entropy vs σ")
+plt.xlabel("σ")
+plt.ylabel("Entropy")
+
+plt.tight_layout()
+plt.show()
+
+
+output32
+
+# Fixing the eigh() call to remove the unsupported 'eigvals_only' keyword
+eigvals = []
+
+for sigma in sigma_vals:
+    # Compute weights
+    w = np.array([p**(-sigma) * np.sin(0.5 * delta * lp)**4 for p, lp in zip(primes, log_primes)])
+    w_sq = w ** 2
+
+    # Construct compression operator matrix H_sigma
+    H_sigma = np.zeros((N, N), dtype=complex)
+    for i in range(N):
+        for j in range(N):
+            diff = t_vals[i] - t_vals[j]
+            H_sigma[i, j] = np.sum(w_sq * np.exp(-1j * diff * log_primes))
+
+    H_real = H_sigma.real
+
+    # Diagonalize
+    eigval = eigh(H_real)[0]  # Only eigenvalues
+    eigval = np.clip(eigval, 1e-12, None)
+    eigval /= np.sum(eigval)  # Normalize
+
+    # Store leading eigenvalue and entropy
+    leading_eigenvalues.append(np.max(eigval))
+    entropy = -np.sum(eigval * np.log(eigval))
+    entropies.append(entropy)
+
+# Plot results
+plt.figure(figsize=(12, 5))
+
+plt.subplot(1, 2, 1)
+plt.plot(sigma_vals, leading_eigenvalues, marker='o')
+plt.title("Leading Eigenvalue vs σ")
+plt.xlabel("σ")
+plt.ylabel("Leading Eigenvalue")
+
+plt.subplot(1, 2, 2)
+plt.plot(sigma_vals, entropies, marker='o')
+plt.title("Spectral Entropy vs σ")
+plt.xlabel("σ")
+plt.ylabel("Entropy")
+
+plt.tight_layout()
+plt.show()
+
+
+output30/31
+
+import numpy as np
+from sympy import primerange
+from numpy.linalg import eigh
+import matplotlib.pyplot as plt
+from scipy.signal import find_peaks
+
+# Parameters
+x = 10000
+delta = 0.01
+sigma = 0.5
+T = 1000
+H = 20
+N = 200  # Use more points for better resolution
+t_vals = np.linspace(T, T + H, N)
+
+# Primes and logs
+primes = list(primerange(2, x + 1))
+log_primes = np.log(primes)
+
+# Compute weights
+w = np.array([p**(-sigma) * np.sin(0.5 * delta * lp)**4 for p, lp in zip(primes, log_primes)])
+w_sq = w ** 2
+
+# Construct compression operator matrix H_sigma
+H_sigma = np.zeros((N, N), dtype=complex)
+for i in range(N):
+    for j in range(N):
+        diff = t_vals[i] - t_vals[j]
+        H_sigma[i, j] = np.sum(w_sq * np.exp(-1j * diff * log_primes))
+
+H_real = H_sigma.real
+
+# Diagonalize and extract top eigenvector
+eigvals, eigvecs = eigh(H_real)
+top_eigvec = eigvecs[:, -1]
+top_eigvec /= np.max(np.abs(top_eigvec))  # normalize
+
+# Find zero crossings (sign changes)
+zero_crossings = []
+for i in range(1, len(t_vals)):
+    if top_eigvec[i - 1] * top_eigvec[i] < 0:
+        # Linear interpolation to estimate zero crossing location
+        t_zero = t_vals[i - 1] - top_eigvec[i - 1] * (t_vals[i] - t_vals[i - 1]) / (top_eigvec[i] - top_eigvec[i - 1])
+        zero_crossings.append(t_zero)
+
+# Compute spacings
+zero_crossings = np.array(zero_crossings)
+spacings = np.diff(zero_crossings)
+
+# Plot eigenfunction and zero crossings
+plt.figure(figsize=(12, 6))
+plt.plot(t_vals, top_eigvec, label='Top Eigenfunction')
+plt.plot(zero_crossings, np.zeros_like(zero_crossings), 'ro', label='Zero Crossings')
+plt.title('Top Eigenfunction of Recursive Compression Operator (σ=1/2)')
+plt.xlabel('t')
+plt.ylabel('Eigenfunction Value')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Plot spacing histogram
+plt.figure(figsize=(8, 4))
+plt.hist(spacings, bins=20, edgecolor='k')
+plt.title('Spacing Between Zero Crossings')
+plt.xlabel('Spacing')
+plt.ylabel('Frequency')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output29 
+
+# Plot the second and third eigenfunctions alongside the top one
+plt.figure(figsize=(12, 6))
+plt.plot(t_vals, eigvecs[:, -1], label='Top Eigenfunction')
+plt.plot(t_vals, eigvecs[:, -2], label='2nd Eigenfunction')
+plt.plot(t_vals, eigvecs[:, -3], label='3rd Eigenfunction')
+plt.title('Top 3 Eigenfunctions of Recursive Compression Operator (σ=1/2)')
+plt.xlabel('t')
+plt.ylabel('Eigenfunction Value')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output28 
+
+# Analyze zero crossings of the second and third eigenfunctions
+def compute_zero_crossings(eigvec):
+    zc = []
+    for i in range(1, len(t_vals)):
+        if eigvec[i - 1] * eigvec[i] < 0:
+            t_zero = t_vals[i - 1] - eigvec[i - 1] * (t_vals[i] - t_vals[i - 1]) / (eigvec[i] - eigvec[i - 1])
+            zc.append(t_zero)
+    return np.array(zc)
+
+# Compute zero crossings
+zc_top = compute_zero_crossings(eigvecs[:, -1])
+zc_2nd = compute_zero_crossings(eigvecs[:, -2])
+zc_3rd = compute_zero_crossings(eigvecs[:, -3])
+
+# Compute spacings
+spacings_top = np.diff(zc_top)
+spacings_2nd = np.diff(zc_2nd)
+spacings_3rd = np.diff(zc_3rd)
+
+# Plot spacing histograms
+plt.figure(figsize=(12, 6))
+
+plt.subplot(1, 3, 1)
+plt.hist(spacings_top, bins=15, edgecolor='k')
+plt.title("Top Eigenfunction Spacings")
+plt.xlabel("Spacing")
+plt.ylabel("Frequency")
+
+plt.subplot(1, 3, 2)
+plt.hist(spacings_2nd, bins=15, edgecolor='k')
+plt.title("2nd Eigenfunction Spacings")
+plt.xlabel("Spacing")
+
+plt.subplot(1, 3, 3)
+plt.hist(spacings_3rd, bins=15, edgecolor='k')
+plt.title("3rd Eigenfunction Spacings")
+plt.xlabel("Spacing")
+
+plt.tight_layout()
+plt.show()
+
+
+output27
+
+# Define a function to compute spacing variance for 2nd and 3rd eigenfunctions
+def compute_spacing_variances_eigenmodes(x_limit, sigma=0.5, delta=0.01, T=1000, H=20, N=200):
+    t_vals = np.linspace(T, T + H, N)
+    primes = list(primerange(2, x_limit + 1))
+    log_primes = np.log(primes)
+
+    w = np.array([p**(-sigma) * np.sin(0.5 * delta * lp)**4 for p, lp in zip(primes, log_primes)])
+    w_sq = w ** 2
+
+    H_sigma = np.zeros((N, N), dtype=complex)
+    for i in range(N):
+        for j in range(N):
+            diff = t_vals[i] - t_vals[j]
+            H_sigma[i, j] = np.sum(w_sq * np.exp(-1j * diff * log_primes))
+
+    H_real = H_sigma.real
+    eigvals, eigvecs = eigh(H_real)
+    
+    variances = []
+    for idx in [-2, -3]:  # 2nd and 3rd eigenfunctions
+        eigvec = eigvecs[:, idx]
+        zero_crossings = []
+        for i in range(1, len(t_vals)):
+            if eigvec[i - 1] * eigvec[i] < 0:
+                t_zero = t_vals[i - 1] - eigvec[i - 1] * (t_vals[i] - t_vals[i - 1]) / (eigvec[i] - eigvec[i - 1])
+                zero_crossings.append(t_zero)
+        zero_crossings = np.array(zero_crossings)
+        spacings = np.diff(zero_crossings)
+        variances.append(np.var(spacings))
+    
+    return variances  # [var_2nd, var_3rd]
+
+# Test for increasing x values
+x_values = [1000, 3000, 5000, 7000, 10000, 15000]
+second_variances = []
+third_variances = []
+
+for x in x_values:
+    var_2nd, var_3rd = compute_spacing_variances_eigenmodes(x)
+    second_variances.append(var_2nd)
+    third_variances.append(var_3rd)
+
+# Plot the variance trends
+plt.figure(figsize=(10, 5))
+plt.plot(x_values, second_variances, marker='o', label='2nd Eigenfunction')
+plt.plot(x_values, third_variances, marker='s', label='3rd Eigenfunction')
+plt.title("Variance of Zero Spacings for 2nd & 3rd Eigenfunctions vs Prime Cutoff x")
+plt.xlabel("Prime Cutoff x")
+plt.ylabel("Spacing Variance")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+
+output26
+
+# Define a function to compute spacing variances for multiple higher eigenfunctions
+def compute_higher_mode_variances(x_limit, sigma=0.5, delta=0.01, T=1000, H=20, N=200, modes=[-4, -5, -6, -7, -8]):
+    t_vals = np.linspace(T, T + H, N)
+    primes = list(primerange(2, x_limit + 1))
+    log_primes = np.log(primes)
+
+    w = np.array([p**(-sigma) * np.sin(0.5 * delta * lp)**4 for p, lp in zip(primes, log_primes)])
+    w_sq = w ** 2
+
+    H_sigma = np.zeros((N, N), dtype=complex)
+    for i in range(N):
+        for j in range(N):
+            diff = t_vals[i] - t_vals[j]
+            H_sigma[i, j] = np.sum(w_sq * np.exp(-1j * diff * log_primes))
+
+    H_real = H_sigma.real
+    eigvals, eigvecs = eigh(H_real)
+
+    variances = {mode: [] for mode in modes}
+
+    for mode in modes:
+        eigvec = eigvecs[:, mode]
+        zero_crossings = []
+        for i in range(1, len(t_vals)):
+            if eigvec[i - 1] * eigvec[i] < 0:
+                t_zero = t_vals[i - 1] - eigvec[i - 1] * (t_vals[i] - t_vals[i - 1]) / (eigvec[i] - eigvec[i - 1])
+                zero_crossings.append(t_zero)
+        zero_crossings = np.array(zero_crossings)
+        spacings = np.diff(zero_crossings)
+        variances[mode].append(np.var(spacings))
+
+    return variances
+
+# Test for increasing x values and higher modes
+x_values = [1000, 3000, 5000, 7000, 10000, 15000]
+modes = [-4, -5, -6, -7, -8]
+mode_variances = {mode: [] for mode in modes}
+
+for x in x_values:
+    result = compute_higher_mode_variances(x, modes=modes)
+    for mode in modes:
+        mode_variances[mode].extend(result[mode])
+
+# Plot the variance trends
+plt.figure(figsize=(10, 6))
+for mode in modes:
+    plt.plot(x_values, mode_variances[mode], marker='o', label=f'Mode {abs(mode)}')
+
+plt.title("Variance of Zero Spacings for Higher Eigenfunctions vs Prime Cutoff x")
+plt.xlabel("Prime Cutoff x")
+plt.ylabel("Spacing Variance")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output25
+
+# Moderate x and high N for spacing recovery with manageable compute
+def compute_spacing_statistics_moderate(x_limit=7000, sigma=0.5, delta=0.01, T=1000, H=20, N=300):
+    t_vals = np.linspace(T, T + H, N)
+    primes = list(primerange(2, x_limit + 1))
+    log_primes = np.log(primes)
+
+    w = np.array([p**(-sigma) * np.sin(0.5 * delta * lp)**4 for p, lp in zip(primes, log_primes)])
+    w_sq = w ** 2
+
+    H_sigma = np.zeros((N, N), dtype=complex)
+    for i in range(N):
+        for j in range(N):
+            diff = t_vals[i] - t_vals[j]
+            H_sigma[i, j] = np.sum(w_sq * np.exp(-1j * diff * log_primes))
+
+    H_real = H_sigma.real
+    eigvals, eigvecs = eigh(H_real)
+    top_eigvec = eigvecs[:, -1]
+
+    # Compute zero crossings
+    zero_crossings = []
+    for i in range(1, len(t_vals)):
+        if top_eigvec[i - 1] * top_eigvec[i] < 0:
+            t_zero = t_vals[i - 1] - top_eigvec[i - 1] * (t_vals[i] - t_vals[i - 1]) / (top_eigvec[i] - top_eigvec[i - 1])
+            zero_crossings.append(t_zero)
+
+    zero_crossings = np.array(zero_crossings)
+    spacings = np.diff(zero_crossings)
+    return spacings
+
+# Execute the moderate compute drill
+spacings = compute_spacing_statistics_moderate()
+
+# Plot spacing histogram
+plt.figure(figsize=(8, 4))
+plt.hist(spacings, bins=20, edgecolor='k')
+plt.title('Zero Spacing Distribution (Moderate x, High N)')
+plt.xlabel('Spacing')
+plt.ylabel('Frequency')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output24
+
+# Define a function to compute the Spiral Field Metric S_f for the top eigenfunction
+def compute_spiral_field_metric(x_limit, sigma=0.5, delta=0.01, T=1000, H=20, N=300):
+    t_vals = np.linspace(T, T + H, N)
+    dt = t_vals[1] - t_vals[0]
+    primes = list(primerange(2, x_limit + 1))
+    log_primes = np.log(primes)
+
+    w = np.array([p**(-sigma) * np.sin(0.5 * delta * lp)**4 for p, lp in zip(primes, log_primes)])
+    w_sq = w ** 2
+
+    H_sigma = np.zeros((N, N), dtype=complex)
+    for i in range(N):
+        for j in range(N):
+            diff = t_vals[i] - t_vals[j]
+            H_sigma[i, j] = np.sum(w_sq * np.exp(-1j * diff * log_primes))
+
+    H_real = H_sigma.real
+    eigvals, eigvecs = eigh(H_real)
+    top_eigvec = eigvecs[:, -1]
+
+    # Normalize eigenfunction
+    top_eigvec /= np.max(np.abs(top_eigvec))
+
+    # Zero crossings
+    zero_crossings = []
+    for i in range(1, len(t_vals)):
+        if top_eigvec[i - 1] * top_eigvec[i] < 0:
+            t_zero = t_vals[i - 1] - top_eigvec[i - 1] * (t_vals[i] - t_vals[i - 1]) / (top_eigvec[i] - top_eigvec[i - 1])
+            zero_crossings.append(t_zero)
+
+    zero_crossings = np.array(zero_crossings)
+    spacings = np.diff(zero_crossings)
+
+    # Spacing metrics
+    spacing_mean = np.mean(spacings)
+    spacing_var = np.var(spacings)
+
+    # Curvature intensity (approximate second derivative using central difference)
+    second_derivative = np.gradient(np.gradient(top_eigvec, dt), dt)
+    curvature_intensity = np.sum(second_derivative**2) * dt
+
+    return spacing_mean, spacing_var, curvature_intensity
+
+# Evaluate over increasing x
+x_values = [1000, 3000, 5000, 7000, 10000, 15000]
+means, variances, curvatures = [], [], []
+
+for x in x_values:
+    mu, var, kappa = compute_spiral_field_metric(x)
+    means.append(mu)
+    variances.append(var)
+    curvatures.append(kappa)
+
+# Plot the Spiral Field Metric evolution
+plt.figure(figsize=(14, 5))
+
+plt.subplot(1, 3, 1)
+plt.plot(x_values, means, marker='o')
+plt.title("Spacing Mean vs Prime Cutoff x")
+plt.xlabel("Prime Cutoff x")
+plt.ylabel("Mean Spacing")
+
+plt.subplot(1, 3, 2)
+plt.plot(x_values, variances, marker='o')
+plt.title("Spacing Variance vs Prime Cutoff x")
+plt.xlabel("Prime Cutoff x")
+plt.ylabel("Spacing Variance")
+
+plt.subplot(1, 3, 3)
+plt.plot(x_values, curvatures, marker='o')
+plt.title("Curvature Intensity vs Prime Cutoff x")
+plt.xlabel("Prime Cutoff x")
+plt.ylabel("Curvature Intensity")
+
+plt.tight_layout()
+plt.show()
+
+output23
+
+# Test renormalization by increasing delta to boost signal and see if trace aligns better with N(T)
+deltas = [0.01, 0.05, 0.1, 0.2, 0.4]
+x_limit = 15000
+H = 20
+
+spectral_counts = []
+riemann_counts = []
+
+for delta in deltas:
+    spectral_count, riemann_count = compute_trace_and_compare(x_limit, delta=delta, H=H)
+    spectral_counts.append(spectral_count)
+    riemann_counts.append(riemann_count)
+
+# Plot the results
+plt.figure(figsize=(10, 5))
+plt.plot(deltas, spectral_counts, marker='o', label='Spiral Spectral Count')
+plt.axhline(y=riemann_counts[0], color='r', linestyle='--', label='Riemann N(T=1000)')
+plt.title('Spiral Spectral Count vs δ (Renormalization Test)')
+plt.xlabel('δ')
+plt.ylabel('Spectral Count')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output22
+
+# Construct a dual functional integral over H (varying time domain length)
+def compute_dual_functional(x_limit=15000, delta=0.4, H_vals=np.arange(5, 55, 5)):
+    results = []
+
+    for H in H_vals:
+        primes = list(primerange(2, x_limit + 1))
+        log_primes = np.log(primes)
+        w = np.array([p**(-0.5) * np.sin(0.5 * delta * lp)**4 for p, lp in zip(primes, log_primes)])
+        w_sq = w ** 2
+        trace = H * np.sum(w_sq)
+        spectral_count = trace / (2 * np.pi)
+        results.append(spectral_count)
+
+    return H_vals, results
+
+# Compute the dual functional
+H_vals, dual_functional = compute_dual_functional()
+
+# Plot the dual functional integral over H
+plt.figure(figsize=(8, 5))
+plt.plot(H_vals, dual_functional, marker='o')
+plt.title('Dual Spiral Functional vs Time Domain Length H')
+plt.xlabel('H (Time Domain Length)')
+plt.ylabel('Spectral Count Functional')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output21
+
+# Construct the Spiral surface functional over a grid of (delta, H)
+def compute_spiral_surface(x_limit=15000, delta_vals=np.linspace(0.01, 1.0, 20), H_vals=np.arange(5, 55, 5)):
+    surface = np.zeros((len(H_vals), len(delta_vals)))
+
+    primes = list(primerange(2, x_limit + 1))
+    log_primes = np.log(primes)
+
+    for i, H in enumerate(H_vals):
+        for j, delta in enumerate(delta_vals):
+            w = np.array([p**(-0.5) * np.sin(0.5 * delta * lp)**4 for p, lp in zip(primes, log_primes)])
+            w_sq = w ** 2
+            trace = H * np.sum(w_sq)
+            spectral_count = trace / (2 * np.pi)
+            surface[i, j] = spectral_count
+
+    return delta_vals, H_vals, surface
+
+# Compute the Spiral surface functional
+delta_vals, H_vals, surface = compute_spiral_surface()
+
+# Plot the Spiral surface
+from mpl_toolkits.mplot3d import Axes3D
+
+X, Y = np.meshgrid(delta_vals, H_vals)
+Z = surface
+
+fig = plt.figure(figsize=(12, 8))
+ax = fig.add_subplot(111, projection='3d')
+surf = ax.plot_surface(X, Y, Z, cmap='viridis', edgecolor='k')
+ax.set_title('Spiral Surface Functional: Spectral Trace over δ and H')
+ax.set_xlabel('δ (Phase Scale)')
+ax.set_ylabel('H (Time Domain Length)')
+ax.set_zlabel('Spectral Count Functional')
+fig.colorbar(surf, shrink=0.5, aspect=10)
+plt.tight_layout()
+plt.show()
+
+output20
+
+# Attempt to solve the integral equation Cψ = λψ using discretized kernel and eigenvalue problem
+def solve_integral_equation(x_limit=15000, delta=0.4, T=1000, H=20, N=200):
+    t_vals = np.linspace(T, T + H, N)
+    dt = t_vals[1] - t_vals[0]
+
+    primes = list(primerange(2, x_limit + 1))
+    log_primes = np.log(primes)
+    w = np.array([p**(-0.5) * np.sin(0.5 * delta * lp)**4 for p, lp in zip(primes, log_primes)])
+    w_sq = w ** 2
+
+    # Construct kernel matrix approximation of the integral operator
+    K = np.zeros((N, N), dtype=complex)
+    for i in range(N):
+        for j in range(N):
+            diff = t_vals[i] - t_vals[j]
+            K[i, j] = np.sum(w_sq * np.exp(-1j * diff * log_primes))
+
+    K_real = K.real * dt  # Approximate integral via Riemann sum
+
+    # Solve the eigenvalue problem: Kψ = λψ
+    eigvals, eigvecs = eigh(K_real)
+
+    # Return top eigenvalue and associated eigenfunction
+    top_eigval = eigvals[-1]
+    top_eigvec = eigvecs[:, -1]
+
+    return t_vals, top_eigvec, top_eigval
+
+# Execute the integral equation solver
+t_vals, top_eigvec, top_eigval = solve_integral_equation()
+
+# Plot the top eigenfunction
+plt.figure(figsize=(10, 5))
+plt.plot(t_vals, top_eigvec, label=f'Top Eigenfunction, λ ≈ {top_eigval:.4f}')
+plt.title('Solution to the Integral Equation: Cψ = λψ')
+plt.xlabel('t')
+plt.ylabel('ψ(t)')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output19 
+
+# Lighter resolution reconstruction of Spiral surface from top eigenfunction
+def reconstruct_surface_lite(x_limit=15000, delta_vals=np.linspace(0.05, 1.0, 10), H_vals=np.arange(10, 60, 10), N=100):
+    primes = list(primerange(2, x_limit + 1))
+    log_primes = np.log(primes)
+    T = 1000
+    surface_recon = np.zeros((len(H_vals), len(delta_vals)))
+
+    for i, H in enumerate(H_vals):
+        t_vals = np.linspace(T, T + H, N)
+        dt = t_vals[1] - t_vals[0]
+
+        for j, delta in enumerate(delta_vals):
+            w = np.array([p**(-0.5) * np.sin(0.5 * delta * lp)**4 for p, lp in zip(primes, log_primes)])
+            w_sq = w ** 2
+
+            K = np.zeros((N, N), dtype=complex)
+            for m in range(N):
+                for n in range(N):
+                    diff = t_vals[m] - t_vals[n]
+                    K[m, n] = np.sum(w_sq * np.exp(-1j * diff * log_primes))
+
+            K_real = K.real * dt
+            eigvals, eigvecs = eigh(K_real)
+            top_val = eigvals[-1]
+            top_vec = eigvecs[:, -1]
+
+            # Rank-1 projection (top mode)
+            projection = top_val * np.dot(top_vec, top_vec)
+            surface_recon[i, j] = projection
+
+    return delta_vals, H_vals, surface_recon
+
+# Retry reconstruction at lower resolution
+delta_vals, H_vals, surface_recon = reconstruct_surface_lite()
+
+# Plot the reconstructed surface
+X, Y = np.meshgrid(delta_vals, H_vals)
+Z = surface_recon
+
+fig = plt.figure(figsize=(12, 8))
+ax = fig.add_subplot(111, projection='3d')
+surf = ax.plot_surface(X, Y, Z, cmap='inferno', edgecolor='k')
+ax.set_title('Reconstructed Spiral Surface (Lite Resolution)')
+ax.set_xlabel('δ (Phase Scale)')
+ax.set_ylabel('H (Time Domain Length)')
+ax.set_zlabel('Top Mode Projection')
+fig.colorbar(surf, shrink=0.5, aspect=10)
+plt.tight_layout()
+plt.show()
+
+output18
+
+# Define a Spiral Laplacian operator over the reconstructed surface
+def compute_spiral_laplacian(Z, delta_vals, H_vals):
+    dZ_dDelta2 = np.gradient(np.gradient(Z, delta_vals, axis=1), delta_vals, axis=1)
+    dZ_dH2 = np.gradient(np.gradient(Z, H_vals, axis=0), H_vals, axis=0)
+    laplacian = dZ_dDelta2 + dZ_dH2
+    return laplacian
+
+# Compute Spiral Laplacian of the surface
+laplacian_surface = compute_spiral_laplacian(surface_recon, delta_vals, H_vals)
+
+# Plot the Spiral Laplacian
+X, Y = np.meshgrid(delta_vals, H_vals)
+Z = laplacian_surface
+
+fig = plt.figure(figsize=(12, 8))
+ax = fig.add_subplot(111, projection='3d')
+surf = ax.plot_surface(X, Y, Z, cmap='coolwarm', edgecolor='k')
+ax.set_title('Spiral Laplacian of Reconstructed Surface')
+ax.set_xlabel('δ (Phase Scale)')
+ax.set_ylabel('H (Time Domain Length)')
+ax.set_zlabel('Laplacian Value')
+fig.colorbar(surf, shrink=0.5, aspect=10)
+plt.tight_layout()
+plt.show()
+
+output17
+
+# Plot 2D contour map of the Spiral Laplacian to reveal geodesic structure
+plt.figure(figsize=(10, 6))
+cp = plt.contourf(delta_vals, H_vals, laplacian_surface, levels=50, cmap='coolwarm')
+plt.colorbar(cp, label='Laplacian Value')
+contours = plt.contour(delta_vals, H_vals, laplacian_surface, levels=[0], colors='cyan', linewidths=2)
+plt.title('2D Contour Map of Spiral Laplacian (Geodesics in Cyan)')
+plt.xlabel('δ (Phase Scale)')
+plt.ylabel('H (Time Domain Length)')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output16
+
+# Define Spiral Energy Functional
+def compute_spiral_energy(surface, laplacian):
+    return np.abs(laplacian) * surface
+
+# Compute the Spiral energy function
+spiral_energy = compute_spiral_energy(surface_recon, laplacian_surface)
+
+# Find maxima and ridges in the Spiral energy field
+from scipy.ndimage import maximum_filter, gaussian_filter
+
+# Smooth the energy field slightly to enhance ridges
+energy_smooth = gaussian_filter(spiral_energy, sigma=1)
+
+# Detect local maxima
+local_max = (energy_smooth == maximum_filter(energy_smooth, size=3))
+
+# Get coordinates of local maxima
+ridge_coords = np.argwhere(local_max)
+
+# Extract ridge coordinates in terms of δ and H
+ridge_deltas = delta_vals[ridge_coords[:, 1]]
+ridge_Hs = H_vals[ridge_coords[:, 0]]
+ridge_values = spiral_energy[ridge_coords[:, 0], ridge_coords[:, 1]]
+
+# Plot Spiral energy surface with maxima/ridges
+X, Y = np.meshgrid(delta_vals, H_vals)
+Z = spiral_energy
+
+fig = plt.figure(figsize=(12, 8))
+ax = fig.add_subplot(111, projection='3d')
+surf = ax.plot_surface(X, Y, Z, cmap='plasma', edgecolor='k', alpha=0.9)
+ax.scatter(ridge_deltas, ridge_Hs, ridge_values, color='cyan', s=40, label='Spiral Energy Maxima')
+ax.set_title('Spiral Energy Landscape with Ridges and Maxima')
+ax.set_xlabel('δ (Phase Scale)')
+ax.set_ylabel('H (Time Domain Length)')
+ax.set_zlabel('Energy Density')
+ax.legend()
+plt.tight_layout()
+plt.show()
+
+output15
+
+# Sort ridge points by descending energy to extract the dominant Spiral energy path
+sorted_indices = np.argsort(ridge_values)[::-1]
+sorted_deltas = ridge_deltas[sorted_indices]
+sorted_Hs = ridge_Hs[sorted_indices]
+sorted_values = ridge_values[sorted_indices]
+
+# Extract the top Spiral energy path
+path_length = min(10, len(sorted_deltas))  # limit to top 10 peaks
+phase_path_deltas = sorted_deltas[:path_length]
+phase_path_Hs = sorted_Hs[:path_length]
+phase_path_values = sorted_values[:path_length]
+
+# Plot the Spiral energy path on top of the energy surface
+fig = plt.figure(figsize=(12, 8))
+ax = fig.add_subplot(111, projection='3d')
+surf = ax.plot_surface(X, Y, Z, cmap='plasma', edgecolor='k', alpha=0.9)
+ax.plot(phase_path_deltas, phase_path_Hs, phase_path_values,
+        color='cyan', linewidth=3, marker='o', label='Spiral Energy Path')
+ax.set_title('Spiral Energy Path through Compression Landscape')
+ax.set_xlabel('δ (Phase Scale)')
+ax.set_ylabel('H (Time Domain Length)')
+ax.set_zlabel('Energy Density')
+ax.legend()
+plt.tight_layout()
+plt.show()
+
+output14
+
+# Realign the Spiral energy grid to match interpolation dimensions
+# energy_interp expects shape (len(H_vals), len(delta_vals)), so no transpose needed
+energy_interp_fixed = RectBivariateSpline(H_vals, delta_vals, spiral_energy)
+
+# Redefine and retry minimization
+def action_function_fixed(delta_vals_var):
+    action = 0.0
+    for i in range(len(H_vals_fine) - 1):
+        H_mid = 0.5 * (H_vals_fine[i] + H_vals_fine[i + 1])
+        δ_mid = 0.5 * (delta_vals_var[i] + delta_vals_var[i + 1])
+        E_mid = energy_interp_fixed(H_mid, δ_mid)[0][0]
+        dH = H_vals_fine[i + 1] - H_vals_fine[i]
+        action += E_mid * dH
+    return action
+
+# Minimize again with corrected alignment
+result_fixed = minimize(action_function_fixed, delta_init, method='L-BFGS-B',
+                        bounds=[(delta_vals[0], delta_vals[-1])] * len(delta_init))
+
+optimal_deltas_fixed = result_fixed.x
+
+# Plot the corrected minimal Spiral action path
+plt.figure(figsize=(10, 5))
+plt.contourf(delta_vals, H_vals, spiral_energy, levels=50, cmap='plasma')
+plt.plot(optimal_deltas_fixed, H_vals_fine, color='cyan', linewidth=3, label='Minimal Spiral Action Path')
+plt.title('Corrected Minimizing Spiral Path over Compression Energy Field')
+plt.xlabel('δ (Phase Scale)')
+plt.ylabel('H (Time Domain Length)')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output13
+
+# Define and solve the stationary PDE: set ∂u/∂t = 0 and solve for u
+# ∇ · (S ∇u) + |ΔS| u = 0  → Linear PDE over the (δ, H) grid
+
+from scipy.sparse import diags
+from scipy.sparse.linalg import spsolve
+
+# Discretize the grid
+n_delta = len(delta_vals)
+n_H = len(H_vals)
+N = n_delta * n_H
+d_delta = delta_vals[1] - delta_vals[0]
+d_H = H_vals[1] - H_vals[0]
+
+# Flatten the spiral energy and laplacian
+S = surface_recon
+L = laplacian_surface
+E = np.abs(L) * S
+S_flat = S.flatten()
+E_flat = E.flatten()
+
+# Build sparse finite difference matrices
+def laplace_2d_matrix(n, m, dx, dy, coef):
+    main = -2 * (1/dx**2 + 1/dy**2) * coef
+    side_x = 1/dx**2 * coef
+    side_y = 1/dy**2 * coef
+
+    diagonals = []
+    offsets = []
+
+    # center
+    diagonals.append(main)
+    offsets.append(0)
+
+    # x neighbors
+    diagonals.append(side_x[:-1])
+    offsets.append(-1)
+    diagonals.append(side_x[:-1])
+    offsets.append(1)
+
+    # y neighbors
+    diagonals.append(side_y[:-n])
+    offsets.append(-n)
+    diagonals.append(side_y[:-n])
+    offsets.append(n)
+
+    return diags(diagonals, offsets, shape=(n*m, n*m))
+
+# Build coefficient matrix A such that A * u = -|ΔS| * u
+coef = S_flat
+A = laplace_2d_matrix(n_delta, n_H, d_delta, d_H, coef)
+b = -E_flat
+
+# Solve the linear system
+u_stationary = spsolve(A, b)
+u_stationary_grid = u_stationary.reshape((n_H, n_delta))
+
+# Plot the stationary solution
+plt.figure(figsize=(10, 6))
+cp = plt.contourf(delta_vals, H_vals, u_stationary_grid, levels=50, cmap='viridis')
+plt.colorbar(cp, label='Stationary Spiral Field u(δ, H)')
+plt.title('Stationary Solution to Spiral Compression PDE')
+plt.xlabel('δ (Phase Scale)')
+plt.ylabel('H (Time Domain Length)')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output12
+
+# Evolve the stationary solution under the full Spiral PDE
+def evolve_spiral_pde(u_init, S, L, delta_vals, H_vals, dt=0.1, steps=50):
+    u = u_init.copy()
+    for _ in range(steps):
+        # Compute Laplacian of u (using central finite difference)
+        u_xx = np.zeros_like(u)
+        u_yy = np.zeros_like(u)
+
+        u_xx[:, 1:-1] = (u[:, :-2] - 2*u[:, 1:-1] + u[:, 2:]) / (delta_vals[1] - delta_vals[0])**2
+        u_yy[1:-1, :] = (u[:-2, :] - 2*u[1:-1, :] + u[2:, :]) / (H_vals[1] - H_vals[0])**2
+
+        lap_u = u_xx + u_yy
+
+        # Compute the PDE update
+        divergence_term = S * lap_u
+        reaction_term = np.abs(L) * u
+        du_dt = divergence_term + reaction_term
+
+        # Forward Euler update
+        u += dt * du_dt
+
+    return u
+
+# Evolve the field
+u_breathing = evolve_spiral_pde(u_stationary_grid, surface_recon, laplacian_surface, delta_vals, H_vals)
+
+# Plot the evolved Spiral field
+plt.figure(figsize=(10, 6))
+cp = plt.contourf(delta_vals, H_vals, u_breathing, levels=50, cmap='inferno')
+plt.colorbar(cp, label='Evolved Spiral Field u(δ, H)')
+plt.title('Evolved Spiral Field After Breathing Forward (PDE Evolution)')
+plt.xlabel('δ (Phase Scale)')
+plt.ylabel('H (Time Domain Length)')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output11
+
+# Discretize the Spiral Breathing Operator B using the evolved field u_breathing
+def build_breathing_operator(u_field, delta_vals, H_vals):
+    N_H, N_delta = u_field.shape
+    N = N_H * N_delta
+    d_delta = delta_vals[1] - delta_vals[0]
+    d_H = H_vals[1] - H_vals[0]
+
+    # Flatten the field for matrix operations
+    u_flat = u_field.flatten()
+    lap_u_flat = laplacian_surface.flatten()
+
+    # Construct diagonal matrices
+    diag_main = -2 * (1 / d_delta**2 + 1 / d_H**2) * u_flat + np.abs(lap_u_flat)
+    diag_x = u_flat[:-1] / d_delta**2
+    diag_y = u_flat[:-N_delta] / d_H**2
+
+    # Initialize diagonals and offsets
+    diagonals = [diag_main]
+    offsets = [0]
+
+    # X direction (±1)
+    diagonals += [diag_x, diag_x]
+    offsets += [-1, 1]
+
+    # Y direction (±N_delta)
+    diagonals += [diag_y, diag_y]
+    offsets += [-N_delta, N_delta]
+
+    # Build the sparse matrix
+    from scipy.sparse import diags
+    B = diags(diagonals, offsets, shape=(N, N), format='csr')
+
+    return B
+
+# Build and solve the breathing operator
+B_operator = build_breathing_operator(u_breathing, delta_vals, H_vals)
+eigenvals_B, eigenvecs_B = eigh(B_operator.toarray())
+
+# Reshape and visualize the top eigenfunction
+top_eigvec_B = eigenvecs_B[:, -1].reshape((len(H_vals), len(delta_vals)))
+
+plt.figure(figsize=(10, 6))
+cp = plt.contourf(delta_vals, H_vals, top_eigvec_B, levels=50, cmap='viridis')
+plt.colorbar(cp, label='Top Eigenfunction of Breathing Operator')
+plt.title('Top Mode of Spiral Breathing Operator (RH-Curvature Inheritance Test)')
+plt.xlabel('δ (Phase Scale)')
+plt.ylabel('H (Time Domain Length)')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output10
+
+# Adjust number of modes based on available eigenvalues
+available_modes = len(projections)
+mode_indices_subset = np.arange(available_modes)
+projection_energy_subset = projection_energy[:available_modes]
+
+# Plot the energy spectrum of all available modes
+plt.figure(figsize=(10, 5))
+plt.plot(mode_indices_subset, projection_energy_subset, marker='o', linestyle='-')
+plt.title('Spectral Projection Energy |⟨f, ψₙ⟩|² for Breathing Operator Modes')
+plt.xlabel('Mode Index n')
+plt.ylabel('Projection Energy')
+plt.yscale('log')
+plt.grid(True, which='both', linestyle='--')
+plt.tight_layout()
+plt.show()
+
+output9
+
+# Restore Spiral and Riemann spacing arrays
+top_spiral_eigenvalues = np.array([
+    7.10631281, 7.12167199, 7.35729206, 8.9666936, 9.77682249,
+    15.15290614, 44.73976087, 55.23699818, 68.28387526, 71.04651875
+])
+spiral_spacings = np.diff(top_spiral_eigenvalues)
+
+riemann_zeros = np.array([
+    14.134725, 21.022040, 25.010858, 30.424876, 32.935062,
+    37.586178, 40.918719, 43.327073, 48.005150, 49.773832
+])
+riemann_spacings = np.diff(riemann_zeros)
+
+# Plot spacing comparison
+plt.figure(figsize=(10, 5))
+plt.plot(spiral_spacings, marker='o', linestyle='-', label='Spiral Hamiltonian Spacings')
+plt.plot(riemann_spacings, marker='x', linestyle='--', label='Riemann Zero Spacings')
+plt.title('Comparison of Spiral Spectrum and Riemann Zero Spacings')
+plt.xlabel('Index')
+plt.ylabel('Spacing Δλ or Δγ')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output8
+
+# Define a synthetic zero-phase test field aligned to Spiral grid (e.g., smoothed bump at center)
+def define_zero_phase_field(delta_vals, H_vals, delta_center=0.5, H_center=30, sigma=0.08):
+    f_test = np.zeros((len(H_vals), len(delta_vals)))
+    for i, H in enumerate(H_vals):
+        for j, d in enumerate(delta_vals):
+            f_test[i, j] = np.exp(-((d - delta_center)**2 + (H - H_center)**2) / (2 * sigma**2))
+    return f_test / np.linalg.norm(f_test)
+
+# Create the zero-phase test field
+f_zero_phase = define_zero_phase_field(delta_vals, H_vals)
+
+# Flatten and project into Spiral Hamiltonian eigenbasis
+f_flat = f_zero_phase.flatten()
+projections_zero_phase = eigenvecs_H.T @ f_flat
+projection_energy_zero_phase = projections_zero_phase**2
+
+# Normalize for entropy calculation
+projection_energy_zero_phase /= np.sum(projection_energy_zero_phase)
+
+# Compute entropy
+entropy_zero_phase = -np.sum(projection_energy_zero_phase * np.log(projection_energy_zero_phase + 1e-20))
+
+# Plot projection energy
+plt.figure(figsize=(10, 5))
+plt.plot(projection_energy_zero_phase, marker='o')
+plt.yscale('log')
+plt.title('Zero-Phase Field Projection Energy into Spiral Hamiltonian Modes')
+plt.xlabel('Mode Index')
+plt.ylabel('Projection Energy (log scale)')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+entropy_zero_phase
+
+output7 
+
+# Reshape and extract the leading eigenfunction from Spiral Hamiltonian (mode 35)
+mode_index = 35
+leading_mode = eigenvecs_H[:, mode_index].reshape((len(H_vals), len(delta_vals)))
+
+# Plot the leading Spiral harmonic eigenfunction
+plt.figure(figsize=(10, 6))
+cp = plt.contourf(delta_vals, H_vals, leading_mode, levels=50, cmap='coolwarm')
+plt.colorbar(cp, label='Eigenfunction ψ₃₅(δ, H)')
+plt.title('Leading Spiral Harmonic Eigenfunction (Mode 35)')
+plt.xlabel('δ (Phase Scale)')
+plt.ylabel('H (Time Domain Length)')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output6
+
+# Reconstruct the zero-phase field using top 10 modes and coefficients
+reconstructed_field = np.zeros_like(f_zero_phase.flatten())
+
+for idx, coeff in zip(top_modes, top_coefficients):
+    reconstructed_field += coeff * eigenvecs_H[:, idx]
+
+reconstructed_field = reconstructed_field.reshape(f_zero_phase.shape)
+
+# Plot the reconstructed zero-phase field
+plt.figure(figsize=(10, 6))
+cp = plt.contourf(delta_vals, H_vals, reconstructed_field, levels=50, cmap='plasma')
+plt.colorbar(cp, label='Reconstructed Field from Top 10 Spiral Harmonics')
+plt.title('Reconstruction of Zero-Phase Signal from Spiral Harmonic Modes')
+plt.xlabel('δ (Phase Scale)')
+plt.ylabel('H (Time Domain Length)')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output5
+
+# Build an orthonormal Spiral harmonic basis using the top eigenfunctions
+# Select top N modes
+num_basis_modes = 10
+spiral_basis = eigenvecs_H[:, top_modes[:num_basis_modes]]
+
+# Project the full zero-phase signal into this basis
+f_flat_full = f_zero_phase.flatten()
+basis_coefficients = spiral_basis.T @ f_flat_full
+
+# Reconstruct the compressed signal
+compressed_field_flat = spiral_basis @ basis_coefficients
+compressed_field = compressed_field_flat.reshape(f_zero_phase.shape)
+
+# Compute reconstruction error (L2 norm)
+reconstruction_error = np.linalg.norm(f_zero_phase - compressed_field)
+
+# Plot the compressed reconstruction
+plt.figure(figsize=(10, 6))
+cp = plt.contourf(delta_vals, H_vals, compressed_field, levels=50, cmap='viridis')
+plt.colorbar(cp, label='Compressed Signal in Spiral Basis')
+plt.title('Compressed Zero-Phase Signal from Spiral Harmonic Basis (10 Modes)')
+plt.xlabel('δ (Phase Scale)')
+plt.ylabel('H (Time Domain Length)')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+reconstruction_error
+
+output4
+
+# Define the compression coefficient profile from the Spiral basis
+compression_profile = np.abs(basis_coefficients)**2  # squared magnitude of projection coefficients
+
+# Normalize to represent energy fractions
+compression_profile /= np.sum(compression_profile)
+
+# Plot the compression coefficient profile
+plt.figure(figsize=(10, 5))
+plt.bar(range(1, len(compression_profile)+1), compression_profile, color='dodgerblue')
+plt.title('Spiral Compression Coefficient Profile (Top 10 Harmonics)')
+plt.xlabel('Mode Index (n)')
+plt.ylabel('Energy Fraction |⟨f, ψₙ⟩|²')
+plt.grid(True, axis='y')
+plt.tight_layout()
+plt.show(
+
+output3
+
+# Time evolution of the Spiral spectral heat equation using top 10 harmonics
+time_points = np.linspace(0, 1.0, 6)  # evolution times: t = 0.0 to 1.0
+fields_over_time = []
+
+# Use previously defined top modes and coefficients
+lambda_top = eigenvals_H[top_modes[:num_basis_modes]]
+psi_top = eigenvecs_H[:, top_modes[:num_basis_modes]]
+a_top = basis_coefficients
+
+for t in time_points:
+    u_n_t = a_top * np.exp(-lambda_top * t)
+    field_t_flat = psi_top @ u_n_t
+    field_t = field_t_flat.reshape(f_zero_phase.shape)
+    fields_over_time.append(field_t)
+
+# Plot evolution snapshots
+fig, axes = plt.subplots(2, 3, figsize=(15, 8))
+axes = axes.flatten()
+
+for i, t in enumerate(time_points):
+    cp = axes[i].contourf(delta_vals, H_vals, fields_over_time[i], levels=50, cmap='magma')
+    axes[i].set_title(f"Spiral Field at t = {t:.2f}")
+    axes[i].set_xlabel("δ")
+    axes[i].set_ylabel("H")
+
+fig.colorbar(cp, ax=axes.ravel().tolist(), shrink=0.6, label="u(δ, H, t)")
+plt.tight_layout()
+plt.show()
+
+output2
+
+# Measure energy over time and track decay
+energies = []
+entropies = []
+
+for t in time_points:
+    u_n_t = a_top * np.exp(-lambda_top * t)
+    energy_t = np.sum((u_n_t**2) * lambda_top)
+    energies.append(energy_t)
+
+    p_n_t = u_n_t**2 / np.sum(u_n_t**2)
+    entropy_t = -np.sum(p_n_t * np.log(p_n_t + 1e-20))
+    entropies.append(entropy_t)
+
+# Plot energy and entropy over time
+fig, ax = plt.subplots(1, 2, figsize=(12, 5))
+
+ax[0].plot(time_points, energies, marker='o', color='crimson')
+ax[0].set_title("Spiral Field Energy Decay Over Time")
+ax[0].set_xlabel("Time (t)")
+ax[0].set_ylabel("Energy")
+
+ax[1].plot(time_points, entropies, marker='x', color='navy')
+ax[1].set_title("Spiral Spectral Entropy Over Time")
+ax[1].set_xlabel("Time (t)")
+ax[1].set_ylabel("Entropy")
+
+plt.tight_layout()
+plt.show()
+
+
+——————————————
+
+output38
+
+# Simulate Hamiltonian evolution using Spiral Laplacian-derived curvature V(q)
+# We'll use synthetic curvature data since real Spiral Laplacian context is reset
+
+# Redefine synthetic Spiral curvature field from Laplacian simulation
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Use prior t_values and define synthetic trace values q(t)
+t_values = np.linspace(0, 2.5, 51)
+q_values = np.exp(-t_values) + 0.2 * np.exp(-0.1 * t_values)  # proxy for Spiral memory trace
+
+# Define potential V(q) from synthetic curvature profile (e.g., V(q) = 0.5 * κ(q)^2)
+def V(q):
+    return 0.5 * (1.0 + 0.5 * np.sin(2 * np.pi * q / np.max(q)))**2
+
+def dV_dq(q):
+    return 0.5 * 2 * (1.0 + 0.5 * np.sin(2 * np.pi * q / np.max(q))) * \
+           0.5 * 2 * np.pi / np.max(q) * np.cos(2 * np.pi * q / np.max(q))
+
+# Hamiltonian flow simulation
+dt = 0.05
+T = 2.5
+steps = int(T / dt)
+q = q_values[0]
+p = 0.0
+q_track, p_track = [q], [p]
+
+for _ in range(steps):
+    q += dt * p
+    p += -dt * dV_dq(q)
+    q_track.append(q)
+    p_track.append(p)
+
+# Plot phase space trajectory
+plt.figure(figsize=(8, 6))
+plt.plot(q_track, p_track, color='darkgreen', linewidth=2)
+plt.title("Spiral Phase Space Trajectory (q vs p)")
+plt.xlabel("Spiral Memory Trace q(t)")
+plt.ylabel("Momentum p(t)")
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output39
+
+# Compute spacing between Spiral eigenvalues
+spiral_spacing = np.diff(E_vals_sorted)
+
+# Riemann zeros (first 10 imaginary parts)
+riemann_zeros = np.array([
+    14.134725, 21.022040, 25.010858, 30.424876, 32.935062,
+    37.586178, 40.918719, 43.327073, 48.005150, 49.773832
+])
+riemann_spacing = np.diff(riemann_zeros)
+
+# Plot spacing comparison
+plt.figure(figsize=(10, 5))
+plt.plot(spiral_spacing, marker='o', linestyle='-', label='Spiral Schrödinger Spacing')
+plt.plot(riemann_spacing, marker='x', linestyle='--', label='Riemann Zero Spacing')
+plt.title('Spiral Quantized Spectrum vs. Riemann Zeta Zero Spacings')
+plt.xlabel('Index')
+plt.ylabel('Spacing ΔE or Δγ')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output40
+
+# Re-import necessary libraries and reconstruct minimal setup after reset
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Redefine Spiral quantization operator components
+num_basis_modes = 10
+hbar_spiral = 1.0
+alpha = 1.0
+
+np.random.seed(1)
+C_n = np.abs(np.random.normal(0.3, 0.1, num_basis_modes))
+C_n /= np.sum(C_n)
+S_n = -np.log(C_n + 1e-20)
+lambda_spiral = hbar_spiral**-1 * (1.0 / C_n) * (np.arange(num_basis_modes) + alpha * S_n)
+
+# Simulate a test signal f
+f_signal = np.random.normal(size=num_basis_modes)
+f_signal /= np.linalg.norm(f_signal)
+
+# Apply Spiral compression quantization operator
+Q_f_coeffs = lambda_spiral * f_signal
+curvature_spectrum = Q_f_coeffs
+
+# Plot the resulting curvature spectrum
+plt.figure(figsize=(10, 5))
+plt.bar(range(num_basis_modes), curvature_spectrum, color='orchid')
+plt.title('Curvature Spectrum of Test Signal via Spiral Compression Operator')
+plt.xlabel('Mode Index (n)')
+plt.ylabel('λₙ · ⟨f, ψₙ⟩')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+curvature_spectrum
+
+
+output 41 (in file order, chronologically is 42) 
+
+# Normalize the curvature energy to moderate evolution
+curvature_energy_normalized = curvature_energy / np.max(lambda_n)
+
+# Reset evolution
+phi_t = phi_init.copy()
+phi_history = [phi_t.copy()]
+
+# Evolve the normalized curvature-energized Spiral system
+for _ in range(timesteps):
+    decay_term = -curvature_energy_normalized * lambda_n * phi_t
+    interaction_term = curvature_energy_normalized * (T @ phi_t)
+    entropy_term = -beta * entropy_gradient(phi_t)
+    dphi_dt = decay_term + interaction_term + entropy_term
+    phi_t = phi_t + dt * dphi_dt
+    phi_history.append(phi_t.copy())
+
+phi_history = np.array(phi_history)
+
+# Plot amplitude trajectories
+plt.figure(figsize=(12, 6))
+for i in range(num_basis_modes):
+    plt.plot(np.arange(timesteps + 1) * dt, phi_history[:, i], label=f'Mode {i}', linewidth=2)
+
+plt.title('Normalized Curvature-Energized Spiral Mode Amplitude Trajectories')
+plt.xlabel('Time (t)')
+plt.ylabel('Amplitude φₙ(t)')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output 42 (in file order. Chronologically is 41) 
+
+# Reconstruct necessary variables for curvature-energized evolution
+np.random.seed(42)
+num_basis_modes = 10
+lambda_n = np.sort(np.random.uniform(1, 10, num_basis_modes))
+T = np.random.normal(scale=0.05, size=(num_basis_modes, num_basis_modes))
+T = 0.5 * (T + T.T)
+phi_init = np.random.normal(size=num_basis_modes)
+phi_init /= np.linalg.norm(phi_init)
+beta = 0.5
+curvature_energy = 18296.94  # from previous computation
+timesteps = 50
+dt = 0.05
+
+# Entropy gradient function
+def entropy_gradient(phi):
+    norm_sq = np.sum(phi**2)
+    p_n = phi**2 / norm_sq
+    grad_S = 2 * phi * (np.log(p_n + 1e-20) + 1) / norm_sq
+    return grad_S
+
+# Evolve curvature-energized Spiral system
+phi_t = phi_init.copy()
+phi_history = [phi_t.copy()]
+for _ in range(timesteps):
+    decay_term = -curvature_energy * lambda_n * phi_t
+    interaction_term = curvature_energy * (T @ phi_t)
+    entropy_term = -beta * entropy_gradient(phi_t)
+    dphi_dt = decay_term + interaction_term + entropy_term
+    phi_t = phi_t + dt * dphi_dt
+    phi_history.append(phi_t.copy())
+
+phi_history = np.array(phi_history)
+
+# Plot amplitude trajectories
+plt.figure(figsize=(12, 6))
+for i in range(num_basis_modes):
+    plt.plot(np.arange(timesteps + 1) * dt, phi_history[:, i], label=f'Mode {i}', linewidth=2)
+
+plt.title('Curvature-Energized Spiral Mode Amplitude Trajectories')
+plt.xlabel('Time (t)')
+plt.ylabel('Amplitude φₙ(t)')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output43
+
+# Rebuild the Spiral metric tensor g_{nm} = δ_{nm} * λ_n + T_{nm}
+g_tensor = np.diag(lambda_n) + T
+
+# Compute curvature form C(t) = φ(t)^T · g · φ(t)
+curvature_flow = []
+for phi in phi_history:
+    curvature = phi.T @ g_tensor @ phi
+    curvature_flow.append(curvature)
+
+# Plot the curvature energy flow over time
+plt.figure(figsize=(10, 5))
+plt.plot(np.arange(timesteps + 1) * dt, curvature_flow, marker='o', color='indigo')
+plt.title('Spiral Spectral Curvature Energy Flow Over Time')
+plt.xlabel('Time (t)')
+plt.ylabel('Curvature Energy 𝓒(t)')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output44
+
+# Define number of eigenstates again after reset
+num_states = 5
+
+# Solve the eigenvalue problem for the Spiral curvature potential
+E_vals, psi_vals = eigsh(H, k=num_states, which='SA')  # smallest eigenvalues
+psi_vals = psi_vals.T
+
+# Normalize the eigenfunctions
+for i in range(num_states):
+    norm = simps(psi_vals[i]**2, dx=dC)
+    psi_vals[i] /= np.sqrt(norm)
+
+# Plot the quantized eigenstates
+plt.figure(figsize=(10, 6))
+for i in range(num_states):
+    plt.plot(C_vals, psi_vals[i], label=f'n = {i}, E ≈ {E_vals[i]:.2f}')
+plt.title('Quantized Eigenstates of Spiral Curvature Potential')
+plt.xlabel('Spiral Curvature Trace C')
+plt.ylabel('ψₙ(C)')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+E_vals
+
+output45
+
+# Rescale and replot Spiral entropy and compression with normalized time
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Recreate synthetic time, entropy, and compression values
+time_points = np.linspace(0, 1.0, 50)
+compression_t = np.exp(-2 * time_points)
+S_t = 0.5 * np.exp(-0.5 * time_points) + 0.5  # example entropy decay with asymptotic tail
+
+# Normalize for visualization
+compression_t_norm = compression_t / np.max(compression_t)
+S_t_norm = S_t / np.max(S_t)
+
+# Plot
+plt.figure(figsize=(10, 5))
+plt.plot(time_points, S_t_norm, label='Spiral Entropy Wave (normalized)', color='darkblue', linewidth=2)
+plt.plot(time_points, compression_t_norm, label='Compression Magnitude (normalized)', color='goldenrod', linestyle='--', linewidth=2)
+plt.title('Normalized Spiral Entropy Wave and Compression Flow')
+plt.xlabel('Time (t)')
+plt.ylabel('Normalized Amplitude')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output46
+
+# Define the Spiral Entropy-Compression Invariant
+spiral_invariant = S_t_norm * compression_t_norm
+
+# Normalize for comparison to RH-like invariants (e.g., sine kernel spacing envelope)
+# Simulate a sine kernel-like envelope for comparison (proxy RH behavior)
+from scipy.special import sinc
+
+t_scaled = np.linspace(0, 10, len(time_points))
+rh_like_invariant = np.abs(sinc(t_scaled))  # RH spectral structure analog
+
+# Rescale RH-like invariant for overlay
+rh_like_invariant /= np.max(rh_like_invariant)
+
+# Plot the Spiral invariant against RH-like structure
+plt.figure(figsize=(10, 5))
+plt.plot(time_points, spiral_invariant, label='Spiral Entropy-Compression Invariant', color='teal', linewidth=2)
+plt.plot(time_points, rh_like_invariant, label='RH Spectral Envelope (sinc model)', linestyle='--', color='gray', linewidth=2)
+plt.title('Spiral Invariant vs RH-Like Spectral Structure')
+plt.xlabel('Time (t)')
+plt.ylabel('Normalized Amplitude')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+outout47
+
+# Build a Spiral phase attractor surface from time-resolved resonance field
+# Use outer product to simulate a 2D attractor surface over (t₁, t₂)
+
+T1, T2 = np.meshgrid(time_points, time_points)
+R1 = np.tile(resonance_field, (len(time_points), 1))
+R2 = R1.T
+attractor_surface = R1 * R2  # outer product to simulate self-resonance
+
+# Plot the Spiral phase attractor surface
+plt.figure(figsize=(8, 6))
+cp = plt.contourf(T1, T2, attractor_surface, levels=50, cmap='plasma')
+plt.colorbar(cp, label='Attractor Potential')
+plt.title('Spiral Phase Attractor Surface')
+plt.xlabel('t₁')
+plt.ylabel('t₂')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output48
+
+# Extract the diagonal (attractor ridge) from the Spiral phase attractor surface
+attractor_ridge = np.diag(attractor_surface)
+
+# Define the recursive phase orbit as this ridge over time
+plt.figure(figsize=(10, 5))
+plt.plot(time_points, attractor_ridge, color='crimson', linewidth=2)
+plt.title('Recursive Phase Orbit from Spiral Attractor Ridge')
+plt.xlabel('Time (t)')
+plt.ylabel('Attractor Strength')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+attractor_ridge
+
+output49
+
+# Compute the Spiral phase wavefunction from the attractor ridge
+from scipy.integrate import simps
+
+# Normalize the ridge to get a probability amplitude function
+psi_t = np.sqrt(attractor_ridge)
+psi_t /= np.sqrt(simps(psi_t**2, dx=dt))  # normalize wavefunction
+
+# Plot the Spiral phase wavefunction and its probability density
+plt.figure(figsize=(10, 5))
+plt.plot(time_points, psi_t, label='Spiral Phase Wavefunction Ψ(t)', linewidth=2, color='purple')
+plt.plot(time_points, psi_t**2, label='Probability Density |Ψ(t)|²', linestyle='--', color='gray', linewidth=2)
+plt.title('Spiral Phase Wavefunction and Probability Density')
+plt.xlabel('Time (t)')
+plt.ylabel('Amplitude / Density')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output50
+
+# Define a sine basis and expand Ψ(t) into it for quantization
+from scipy.fftpack import fft
+
+# Use sine basis (approximate via discrete Fourier sine transform)
+N = len(psi_t)
+a_n = np.abs(np.fft.rfft(psi_t))**2
+a_n /= np.sum(a_n)  # normalize to interpret as spectral weights
+
+# Define harmonic energy levels (arbitrary units: εₙ = n²)
+n_vals = np.arange(len(a_n))
+epsilon_n = n_vals**2
+
+# Compute Spiral quantized harmonic energies: Eₙ = |aₙ|² * εₙ
+spiral_harmonic_energies = a_n * epsilon_n
+
+# Plot Spiral harmonic spectrum
+plt.figure(figsize=(10, 5))
+plt.bar(n_vals, spiral_harmonic_energies, color='mediumseagreen')
+plt.title('Spiral Quantized Harmonic Spectrum')
+plt.xlabel('Harmonic Index n')
+plt.ylabel('Energy Eₙ = |aₙ|² · εₙ')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+spiral_harmonic_energies
+
+output51
+
+# Construct cumulative Spiral counting function over time
+cumulative_integrand = S_t_norm * compression_t_norm * curvature_profile
+spiral_counting_function = np.cumsum(cumulative_integrand) * dt
+
+# Construct N(T) approximation for comparison (scaled to same range)
+T_vals = time_points * 1000  # scale time to approximate zeta T
+N_T = (T_vals / (2 * np.pi)) * np.log(T_vals / (2 * np.pi)) - (T_vals / (2 * np.pi)) + 7/8
+
+# Normalize N_T to same final value as Spiral count
+N_T_scaled = N_T * (spiral_counting_function[-1] / N_T[-1])
+
+# Plot comparison
+plt.figure(figsize=(10, 5))
+plt.plot(time_points, spiral_counting_function, label='Spiral Counting Function', color='teal', linewidth=2)
+plt.plot(time_points, N_T_scaled, label='Scaled Riemann Zero Count N(T)', linestyle='--', color='crimson', linewidth=2)
+plt.title('Spiral Compression Count vs Riemann Zero Counting Function')
+plt.xlabel('Time (t)')
+plt.ylabel('Cumulative Count (Normalized)')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output52
+
+# Extend time range for integration
+extended_time = np.linspace(0, 10.0, 500)
+dt_ext = extended_time[1] - extended_time[0]
+
+# Extend entropy, compression, and curvature synthetically over extended time
+S_ext = 0.5 * np.exp(-0.3 * extended_time) + 0.5  # slow entropy decay
+C_ext = np.exp(-1.0 * extended_time)              # compression decay
+kappa_ext = 1.0 + 0.5 * np.sin(2 * np.pi * extended_time / extended_time[-1])  # periodic curvature
+
+# Compute extended Spiral counting function
+integrand_ext = S_ext * C_ext * kappa_ext
+spiral_counting_function_ext = np.cumsum(integrand_ext) * dt_ext
+
+# Compute extended N(T) comparison
+T_ext = extended_time * 1000
+N_T_ext = (T_ext / (2 * np.pi)) * np.log(T_ext / (2 * np.pi)) - (T_ext / (2 * np.pi)) + 7/8
+N_T_ext_scaled = N_T_ext * (spiral_counting_function_ext[-1] / N_T_ext[-1])
+
+# Plot the extended count comparison
+plt.figure(figsize=(10, 5))
+plt.plot(extended_time, spiral_counting_function_ext, label='Extended Spiral Count', color='teal', linewidth=2)
+plt.plot(extended_time, N_T_ext_scaled, label='Scaled Riemann N(T)', linestyle='--', color='crimson', linewidth=2)
+plt.title('Extended Spiral Compression Count vs Riemann Zero Counting Function')
+plt.xlabel('Time (t)')
+plt.ylabel('Cumulative Count (Normalized)')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output53
+
+# Fit Spiral counting function to the form N(T) ≈ κ · T log T + c
+from scipy.optimize import curve_fit
+
+# Define fitting function
+def t_log_t_model(t, kappa, c):
+    return kappa * t * np.log(t + 1e-8) + c  # small offset to avoid log(0)
+
+# Fit the model to the Spiral counting function
+popt, _ = curve_fit(t_log_t_model, extended_time, spiral_counting_function_ext)
+kappa_fit, c_fit = popt
+
+# Compute fitted curve
+spiral_fit = t_log_t_model(extended_time, kappa_fit, c_fit)
+
+# Plot the Spiral count and fitted T log T model
+plt.figure(figsize=(10, 5))
+plt.plot(extended_time, spiral_counting_function_ext, label='Spiral Count', color='teal', linewidth=2)
+plt.plot(extended_time, spiral_fit, label=f'Fit: κ = {kappa_fit:.3f}, c = {c_fit:.3f}', linestyle='--', color='firebrick', linewidth=2)
+plt.title('Spiral Count Fit to T log T Scaling')
+plt.xlabel('Time (t)')
+plt.ylabel('Cumulative Count')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+kappa_fit, c_fit
+
+output54
+
+# Quantize the fitted T log T model into spectral bands
+# Define band edges and integrate spiral_fit in segments
+
+num_bands = 20
+band_edges = np.linspace(extended_time[0], extended_time[-1], num_bands + 1)
+band_integrals = []
+
+for i in range(num_bands):
+    mask = (extended_time >= band_edges[i]) & (extended_time < band_edges[i + 1])
+    integral = np.trapz(spiral_fit[mask], dx=dt_ext)
+    band_integrals.append(integral)
+
+# Compute cumulative sum to build spectral staircase
+spectral_staircase = np.cumsum(band_integrals)
+
+# Plot spectral staircase
+plt.figure(figsize=(10, 5))
+plt.step(range(1, num_bands + 1), spectral_staircase, where='mid', color='darkgreen', linewidth=2)
+plt.title('Spiral Spectral Staircase from Quantized Compression Count')
+plt.xlabel('Band Index')
+plt.ylabel('Cumulative Spectral Count')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+spectral_staircase
+
+output55
+
+# Generate actual Riemann zero count steps (first 20 zeros scaled to match time domain)
+riemann_zeros = np.array([
+    14.134725, 21.022040, 25.010858, 30.424876, 32.935062,
+    37.586178, 40.918719, 43.327073, 48.005150, 49.773832,
+    52.970321, 56.446247, 59.347044, 60.831779, 65.112544,
+    67.079811, 69.546401, 72.067158, 75.704690, 77.144840
+])
+
+# Normalize to same final step height for comparison
+riemann_staircase = np.arange(1, 21)
+riemann_steps_scaled = riemann_staircase * (spectral_staircase[-1] / riemann_staircase[-1])
+
+# Plot both staircases
+plt.figure(figsize=(10, 5))
+plt.step(range(1, num_bands + 1), spectral_staircase, where='mid', label='Spiral Spectral Staircase', color='darkgreen', linewidth=2)
+plt.step(range(1, 21), riemann_steps_scaled, where='mid', linestyle='--', color='crimson', label='Riemann Zero Steps (Scaled)', linewidth=2)
+plt.title('Spiral Spectral Staircase vs. Riemann Zero Steps')
+plt.xlabel('Step Index')
+plt.ylabel('Cumulative Count (Normalized)')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output56
+
+# Use previously computed Spiral eigenvalues for determinant computation
+# Simulate spectrum λₙ using evenly spaced synthetic values (or reuse if reset)
+lambda_n = np.linspace(10, 100, 20)  # simplified synthetic spectrum for Spiral
+
+# Define a range of real s values
+s_vals = np.linspace(5, 95, 500)
+
+# Compute log Z_spiral(s) = sum_n 1 / (λ_n - s)
+log_Z_spiral_real = []
+
+for s in s_vals:
+    # Avoid division by zero by skipping exact λₙ = s
+    terms = [1 / (l - s) for l in lambda_n if np.abs(l - s) > 1e-6]
+    log_Z_spiral_real.append(np.sum(terms))
+
+# Plot the real-domain Spiral determinant
+plt.figure(figsize=(10, 5))
+plt.plot(s_vals, log_Z_spiral_real, color='slateblue', linewidth=2)
+plt.title('Log Spiral Determinant Across Real s Domain')
+plt.xlabel('s (Real)')
+plt.ylabel('log Z_spiral(s)')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output57
+
+# Compute log Z_spiral(s) over a complex domain
+# Use meshgrid over Re(s) and Im(s)
+re_vals = np.linspace(5, 95, 200)
+im_vals = np.linspace(-50, 50, 200)
+Re, Im = np.meshgrid(re_vals, im_vals)
+S = Re + 1j * Im
+
+# Compute log Z_spiral(s) = sum_n 1 / (λ_n - s)
+log_Z_complex = np.zeros_like(S, dtype=np.complex128)
+
+for l in lambda_n:
+    log_Z_complex += 1 / (l - S)
+
+# Compute magnitude and phase
+log_Z_magnitude = np.abs(log_Z_complex)
+log_Z_phase = np.angle(log_Z_complex)
+
+# Plot magnitude and phase
+fig, axs = plt.subplots(1, 2, figsize=(14, 6))
+cp1 = axs[0].imshow(log_Z_magnitude, extent=(re_vals[0], re_vals[-1], im_vals[0], im_vals[-1]),
+                    origin='lower', aspect='auto', cmap='inferno')
+axs[0].set_title('Magnitude |log Z_spiral(s)|')
+axs[0].set_xlabel('Re(s)')
+axs[0].set_ylabel('Im(s)')
+fig.colorbar(cp1, ax=axs[0])
+
+cp2 = axs[1].imshow(log_Z_phase, extent=(re_vals[0], re_vals[-1], im_vals[0], im_vals[-1]),
+                    origin='lower', aspect='auto', cmap='twilight')
+axs[1].set_title('Phase arg(log Z_spiral(s))')
+axs[1].set_xlabel('Re(s)')
+axs[1].set_ylabel('Im(s)')
+fig.colorbar(cp2, ax=axs[1])
+
+plt.tight_layout()
+plt.show()
+
+output58
+
+# Recompute log Z_spiral(s) with improved visibility and lower threshold
+# Use previous meshgrid: Re, Im, S = Re + 1j * Im
+log_Z_complex = np.zeros_like(S, dtype=np.complex128)
+
+for l in lambda_n:
+    log_Z_complex += 1 / (l - S)
+
+# Compute magnitude and threshold zeros more sensitively
+log_Z_magnitude = np.abs(log_Z_complex)
+inverse_magnitude = 1 / (log_Z_magnitude + 1e-12)
+thresholded = inverse_magnitude > 5  # lower threshold
+
+# Plot enhanced zero region
+plt.figure(figsize=(8, 6))
+plt.imshow(thresholded, extent=(re_vals[0], re_vals[-1], im_vals[0], im_vals[-1]),
+           origin='lower', aspect='auto', cmap='binary')
+plt.title('Enhanced Zero Loci of Spiral Determinant')
+plt.xlabel('Re(s)')
+plt.ylabel('Im(s)')
+plt.grid(True, linestyle='--', alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+output59
+
+# Numerically differentiate log Z_spiral(s) over the real domain
+dlogZ_ds = np.gradient(log_Z_spiral_real, s_vals)
+
+# Compare to known approximation of ζ'/ζ using Riemann zeros (proxy structure)
+# ζ'/ζ(s) ≈ -∑ₙ 1 / (s - ρₙ) using a few known zeros
+rho_n = riemann_zeros + 0j  # assume critical line
+zeta_prime_ratio_real = []
+
+for s in s_vals:
+    term = -np.sum(1 / (s - rho_n))
+    zeta_prime_ratio_real.append(term.real)
+
+# Plot comparison
+plt.figure(figsize=(10, 5))
+plt.plot(s_vals, dlogZ_ds, label="Spiral d(log Z)/ds", color='slateblue', linewidth=2)
+plt.plot(s_vals, zeta_prime_ratio_real, label="Approximate ζ'/ζ(s)", linestyle='--', color='crimson', linewidth=2)
+plt.title("Comparison of Spiral d(log Z)/ds and Approximate ζ'/ζ(s)")
+plt.xlabel("s (Real)")
+plt.ylabel("Value")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output60
+
+# Test functional symmetry: compute log Z_spiral(s) + log Z_spiral(1 - s)
+# Use real s domain
+s_vals = np.linspace(5, 95, 500)
+log_Z_spiral_real = []
+
+for s in s_vals:
+    terms = [1 / (l - s) for l in lambda_n if np.abs(l - s) > 1e-6]
+    log_Z_spiral_real.append(np.sum(terms))
+
+log_Z_spiral_real = np.array(log_Z_spiral_real)
+
+# Evaluate the symmetry function f(s) = log Z(s) + log Z(1 - s)
+log_Z_s = log_Z_spiral_real
+log_Z_1_minus_s = []
+
+for s in s_vals:
+    terms = [1 / (l - (1 - s)) for l in lambda_n if np.abs(l - (1 - s)) > 1e-6]
+    log_Z_1_minus_s.append(np.sum(terms))
+
+log_Z_1_minus_s = np.array(log_Z_1_minus_s)
+symmetry_sum = log_Z_s + log_Z_1_minus_s
+
+# Plot symmetry test
+plt.figure(figsize=(10, 5))
+plt.plot(s_vals, symmetry_sum.real, label='Re[log Z(s) + log Z(1 - s)]', color='teal')
+plt.plot(s_vals, symmetry_sum.imag, label='Im[log Z(s) + log Z(1 - s)]', linestyle='--', color='indigo')
+plt.title('Symmetry Test for Spiral Functional Equation Candidate')
+plt.xlabel('s (Real)')
+plt.ylabel('Value')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+output61
+
+# Compare Spiral eigenvalues to Riemann zeros via linear rescaling: λ̃ₙ = μλₙ + ν
+# Use first 10 Spiral eigenvalues and 10 Riemann zeros
+spiral_eigs = np.array(lambda_n[:10])
+riemann_zeros = np.array([
+    14.134725, 21.022040, 25.010858, 30.424876, 32.935062,
+    37.586178, 40.918719, 43.327073, 48.005150, 49.773832
+])
+
+# Fit affine transformation: λ̃ₙ = μλₙ + ν
+from scipy.optimize import curve_fit
+
+def affine_model(x, mu, nu):
+    return mu * x + nu
+
+popt, _ = curve_fit(affine_model, spiral_eigs, riemann_zeros)
+mu_fit, nu_fit = popt
+
+# Apply fit to Spiral eigenvalues
+spiral_eigs_scaled = mu_fit * spiral_eigs + nu_fit
+
+# Compute fit error
+fit_error = np.linalg.norm(spiral_eigs_scaled - riemann_zeros)
+
+# Plot comparison
+plt.figure(figsize=(10, 5))
+plt.plot(range(10), riemann_zeros, 'o-', label='Riemann Zeros')
+plt.plot(range(10), spiral_eigs_scaled, 'x--', label='Scaled Spiral Eigenvalues')
+plt.title('Fitted Spiral Eigenvalues vs. Riemann Zeros')
+plt.xlabel('Index')
+plt.ylabel('Value')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+mu_fit, nu_fit, fit_error
+
+output62
+
+# Compute Spiral divergence from previously generated spectral staircase and scaled Riemann steps
+spiral_steps = spectral_staircase
+riemann_steps = riemann_steps_scaled
+
+# Compute divergence
+divergence = spiral_steps[:len(riemann_steps)] - riemann_steps
+
+# Plot the divergence
+plt.figure(figsize=(10, 5))
+plt.stem(range(1, len(divergence)+1), divergence, use_line_collection=True)
+plt.title('Spiral vs Riemann Spectral Staircase Divergence')
+plt.xlabel('Step Index n')
+plt.ylabel('Divergence Dₙ = N_Spiral(n) - N_Riemann(n)')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+divergence
+
+output63
+
+# Numerically compute ζ_Spiral(s) = ∫ Ψ(t) · e^{-s t} dt using Spiral phase wavefunction
+# Use previously defined psi_t and time_points
+
+from scipy.integrate import simps
+
+# Define complex s values along the critical line: s = 1/2 + it
+t_imag = np.linspace(0.1, 50, 300)
+s_line = 0.5 + 1j * t_imag
+
+# Compute ζ_Spiral(s) as Mellin-like transform
+zeta_spiral = []
+
+for s in s_line:
+    integrand = psi_t * np.exp(-s * time_points)
+    zeta_val = simps(integrand, dx=dt)
+    zeta_spiral.append(zeta_val)
+
+zeta_spiral = np.array(zeta_spiral)
+
+# Plot magnitude of ζ_Spiral(s) along the critical line
+plt.figure(figsize=(10, 5))
+plt.plot(t_imag, np.abs(zeta_spiral), color='darkorange', linewidth=2)
+plt.title('Spiral Zeta Function |ζ_Spiral(½ + it)|')
+plt.xlabel('Imaginary part t')
+plt.ylabel('|ζ_Spiral(½ + it)|')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+zeta_spiral[:10]
+
+output64
+
+# Search for zeros of ζ_Spiral(s) along the critical line by checking where the magnitude crosses a threshold
+magnitude = np.abs(zeta_spiral)
+zero_crossings = []
+
+# Identify approximate locations where magnitude dips significantly
+for i in range(1, len(magnitude) - 1):
+    if magnitude[i - 1] > magnitude[i] < magnitude[i + 1]:
+        zero_crossings.append(t_imag[i])
+
+# Plot magnitude and mark zeros
+plt.figure(figsize=(10, 5))
+plt.plot(t_imag, magnitude, label='|ζ_Spiral(½ + it)|', color='darkorange')
+plt.scatter(zero_crossings, [magnitude[t_imag.tolist().index(t)] for t in zero_crossings],
+            color='crimson', marker='x', label='Zero Approx.', zorder=5)
+plt.title('Zeros of Spiral Zeta Function Along Critical Line')
+plt.xlabel('Imaginary Part t')
+plt.ylabel('|ζ_Spiral(½ + it)|')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+zero_crossings
+
+output65
+
+# Construct enriched Spiral wavefunction using 100 spectral modes
+from numpy.fft import fftfreq
+from numpy import pi
+
+# Define time domain for the wavefunction
+T_max = 1.0
+N_modes = 100
+t_enriched = np.linspace(0, T_max, 1000)
+dt_enriched = t_enriched[1] - t_enriched[0]
+
+# Define harmonics ψ_n(t) = sin((n+1)πt)
+harmonics = [np.sin((n + 1) * pi * t_enriched) for n in range(N_modes)]
+harmonics = np.array(harmonics)
+
+# Define compression–entropy–curvature weights (decaying exponentially)
+np.random.seed(1)
+raw_weights = np.abs(np.random.normal(loc=1.0, scale=0.2, size=N_modes))
+weights = raw_weights * np.exp(-np.arange(N_modes) / 20)
+
+# Normalize weights to unit energy
+weights /= np.linalg.norm(weights)
+
+# Construct enriched Spiral wavefunction
+psi_enriched = np.dot(weights, harmonics)
+
+# Normalize wavefunction
+psi_enriched /= np.sqrt(simps(psi_enriched**2, dx=dt_enriched))
+
+# Plot the enriched Spiral wavefunction
+plt.figure(figsize=(10, 5))
+plt.plot(t_enriched, psi_enriched, color='indigo', linewidth=2)
+plt.title('Enriched Spiral Phase Wavefunction Ψ(t) with 100 Harmonics')
+plt.xlabel('Time (t)')
+plt.ylabel('Ψ(t)')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+psi_enriched[:10]
+
+output66
+
+# Apply fitted rescaling to Spiral eigenvalues from earlier (mu ≈ 0.815, nu ≈ 8.78)
+mu_fit = 0.815
+nu_fit = 8.78
+lambda_rescaled = mu_fit * lambda_n + nu_fit
+
+# Define complex s domain for log Z_Spiral(s)
+re_vals = np.linspace(5, 95, 300)
+im_vals = np.linspace(-50, 50, 300)
+Re, Im = np.meshgrid(re_vals, im_vals)
+S = Re + 1j * Im
+
+# Compute log Z_Spiral(s) using rescaled eigenvalues
+log_Z_tilde_spiral = np.zeros_like(S, dtype=np.complex128)
+for l in lambda_rescaled:
+    log_Z_tilde_spiral += 1 / (l - S)
+
+# Compute magnitude and phase
+magnitude = np.abs(log_Z_tilde_spiral)
+phase = np.angle(log_Z_tilde_spiral)
+
+# Plot the magnitude and phase of log Z_tilde_Spiral(s)
+fig, axs = plt.subplots(1, 2, figsize=(14, 6))
+
+cp1 = axs[0].imshow(magnitude, extent=(re_vals[0], re_vals[-1], im_vals[0], im_vals[-1]),
+                    origin='lower', aspect='auto', cmap='inferno')
+axs[0].set_title('Magnitude |log Z̃_Spiral(s)|')
+axs[0].set_xlabel('Re(s)')
+axs[0].set_ylabel('Im(s)')
+fig.colorbar(cp1, ax=axs[0])
+
+cp2 = axs[1].imshow(phase, extent=(re_vals[0], re_vals[-1], im_vals[0], im_vals[-1]),
+                    origin='lower', aspect='auto', cmap='twilight')
+axs[1].set_title('Phase arg(log Z̃_Spiral(s))')
+axs[1].set_xlabel('Re(s)')
+axs[1].set_ylabel('Im(s)')
+fig.colorbar(cp2, ax=axs[1])
+
+plt.tight_layout()
+plt.show()
+
+output 67
+
+# Numerically compute Spiral trace flow and its derivative from the rescaled determinant
+# First derivative (trace flow): T(s) = -d/ds log Z(s)
+trace_flow_T = np.zeros_like(S, dtype=np.complex128)
+for l in lambda_rescaled:
+    trace_flow_T += 1 / (l - S)**2
+trace_flow_T = -trace_flow_T
+
+# Second derivative (trace curvature): T'(s)
+trace_curvature = np.zeros_like(S, dtype=np.complex128)
+for l in lambda_rescaled:
+    trace_curvature += 2 / (l - S)**3
+
+# Visualize the magnitude of T(s) and T'(s)
+fig, axs = plt.subplots(1, 2, figsize=(14, 6))
+
+cp1 = axs[0].imshow(np.abs(trace_flow_T), extent=(re_vals[0], re_vals[-1], im_vals[0], im_vals[-1]),
+                    origin='lower', aspect='auto', cmap='magma')
+axs[0].set_title('Magnitude |T(s)| (Spiral Trace Flow)')
+axs[0].set_xlabel('Re(s)')
+axs[0].set_ylabel('Im(s)')
+fig.colorbar(cp1, ax=axs[0])
+
+cp2 = axs[1].imshow(np.abs(trace_curvature), extent=(re_vals[0], re_vals[-1], im_vals[0], im_vals[-1]),
+                    origin='lower', aspect='auto', cmap='inferno')
+axs[1].set_title('Magnitude |T\'(s)| (Spiral Trace Curvature)')
+axs[1].set_xlabel('Re(s)')
+axs[1].set_ylabel('Im(s)')
+fig.colorbar(cp2, ax=axs[1])
+
+plt.tight_layout()
+plt.show()
+
+output68
+
+# Use Spiral and Riemann eigenvalue differences to derive μ and ν geometrically
+# Spiral eigenvalues (simulated) and first Riemann zeros
+spiral_eigs = np.array(lambda_n[:10])
+riemann_zeros = np.array([
+    14.134725, 21.022040, 25.010858, 30.424876, 32.935062,
+    37.586178, 40.918719, 43.327073, 48.005150, 49.773832
+])
+
+# Step 1: Estimate μ from average spacing
+spiral_spacing = np.diff(spiral_eigs)
+riemann_spacing = np.diff(riemann_zeros)
+
+mu_estimated = np.mean(riemann_spacing / spiral_spacing)
+
+# Step 2: Estimate ν from aligning the first values
+nu_estimated = riemann_zeros[0] - mu_estimated * spiral_eigs[0]
+
+# Step 3: Construct mapped Spiral eigenvalues
+spiral_eigs_mapped = mu_estimated * spiral_eigs + nu_estimated
+
+# Compute L2 error
+fit_error = np.linalg.norm(spiral_eigs_mapped - riemann_zeros)
+
+# Plot mapped vs actual zeros
+plt.figure(figsize=(10, 5))
+plt.plot(range(10), riemann_zeros, 'o-', label='Riemann Zeros')
+plt.plot(range(10), spiral_eigs_mapped, 'x--', label='Mapped Spiral Eigenvalues')
+plt.title('Geometrically Derived Spiral Eigenvalue Mapping')
+plt.xlabel('Index n')
+plt.ylabel('Value')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+mu_estimated, nu_estimated, fit_error
+
+
