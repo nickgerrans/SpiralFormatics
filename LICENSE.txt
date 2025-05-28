@@ -1,13 +1,19 @@
 Copyright © 2025 Nicholas Gerrans
 
-All content in this repository is protected under copyright law.
+All contents of this repository — including theoretical frameworks, geometric constructs, field definitions, and computational models (referred to individually as Spiral Field Theory and Formatics, and collectively as “Spiral Formatics”) — are the intellectual property of the author and are released for non-commercial, academic, and research purposes only.
 
-Permission is hereby granted for academic study, educational use, citation, and non-commercial distribution of the theory, documents, and associated files.
+You are permitted to:
+- View, cite, and share this work for academic or educational use
+- Use the ideas for discussion, critique, or further non-commercial theoretical development
 
-**Commercial Use Clause**  
-No part of this work may be used in any commercial application, product, system, service, or patent filing without explicit, written permission from the author.
+You are **not permitted to**:
+- Use this work, in whole or in part, for any commercial purpose without prior written consent
+- Incorporate this work into a product, software tool, system, or process intended for commercial use
+- File for patents, publish derived commercial intellectual property, or use the contained ideas in funded industrial research without an explicit license agreement
 
-For licensing inquiries, contact:
-nickgerrans0@gmail.com
+Commercial and patent licensing inquiries may be sent to:  
+**nickgerrans0@gmail.com**
+
+Violation of this license may result in legal action, including takedown requests and pursuit of damages under international intellectual property law.
 
 All rights reserved.
